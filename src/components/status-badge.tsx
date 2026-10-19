@@ -24,14 +24,17 @@ const TONE: Record<string, string> = {
   PASS: "bg-chart-2",
   FAIL: "bg-chart-4",
   FLAG: "bg-primary",
-  UNVERIFIED: "bg-muted",
+  UNVERIFIED: "bg-white",
+  ready: "bg-chart-2",
+  missing: "bg-white",
 }
 
-export function StatusBadge({ value }: { value?: string | null }) {
+export function StatusBadge({ value, prefix }: { value?: string | null; prefix?: string }) {
   if (!value) return null
+  const label = value.replace(/_/g, " ")
   return (
-    <Badge variant="outline" className={cn("capitalize", TONE[value] || "bg-card")}>
-      {value.replace(/_/g, " ")}
+    <Badge variant="outline" className={cn("bg-white capitalize", TONE[value])}>
+      {prefix ? `${prefix} ${label}` : label}
     </Badge>
   )
 }

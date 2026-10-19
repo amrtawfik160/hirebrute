@@ -37,7 +37,7 @@ export function ProfilePage() {
   return (
     <>
       <PageHeader
-        kicker="setup"
+        kicker="Candidate"
         title="Profile"
         description="Facts here are the only facts drafts may use. A metric that lives only in chat gets stripped later."
         actions={
@@ -97,12 +97,13 @@ export function ProfilePage() {
               value={profile.search.locations.join(", ")}
               onChange={(v) => setProfile({ ...profile, search: { ...profile.search, locations: split(v) } })}
             />
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 pt-1">
               <Switch
+                id="remote-friendly"
                 checked={profile.search.remote}
                 onCheckedChange={(v) => setProfile({ ...profile, search: { ...profile.search, remote: v } })}
               />
-              <Label>Remote-friendly</Label>
+              <Label htmlFor="remote-friendly">Remote-friendly search</Label>
             </div>
             <Field
               label="Primary skills"

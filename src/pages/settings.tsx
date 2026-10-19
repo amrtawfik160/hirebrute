@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { LoadingState } from "@/components/empty-state"
 import { PageHeader } from "@/components/page-header"
 import { StatusBadge } from "@/components/status-badge"
 import { api, download } from "@/lib/api"
@@ -28,12 +29,12 @@ export function SettingsPage() {
     refresh().catch((e: Error) => toast.error(e.message))
   }, [])
 
-  if (!data) return <p className="font-head">Detecting providers…</p>
+  if (!data) return <LoadingState label="Detecting providers" />
 
   return (
     <>
       <PageHeader
-        kicker="settings"
+        kicker="This machine"
         title="Settings"
         description="Keys are stored in data/store.json on this machine. The browser never sends them to a third party except the provider you chose."
       />
@@ -43,7 +44,7 @@ export function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           {data.providers.map((p) => (
-            <div key={p.id} className="space-y-2 border-2 border-black p-3">
+            <div key={p.id} className={`space-y-3 border-2 border-black p-4 shadow-sm ${data.active === p.id ? "bg-primary" : "bg-white"}`}>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <p className="font-head">{p.label}</p>
@@ -119,7 +120,7 @@ export function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-sm">Type RESET in all caps. Anything else cancels and changes nothing.</p>
-          <select className="h-9 border-2 bg-input px-2" value={scope} onChange={(e) => setScope(e.target.value as typeof scope)}>
+          <select className="h-10 w-full border-2 border-black bg-white px-3 text-sm shadow-sm" value={scope} onChange={(e) => setScope(e.target.value as typeof scope)} aria-label="Reset scope">
             <option value="all">All (profile, jobs, applications, documents)</option>
             <option value="profile">Profile and tracker</option>
             <option value="documents">Documents only</option>

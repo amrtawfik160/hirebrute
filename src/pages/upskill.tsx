@@ -39,7 +39,7 @@ export function UpskillPage() {
   return (
     <>
       <PageHeader
-        kicker="upskill"
+        kicker="Practice"
         title="Upskill"
         description="Recorded gaps beat inferred ones. Skills already on the profile are dropped. Course URLs are omitted unless a provider returns a real http link."
         actions={
@@ -47,7 +47,7 @@ export function UpskillPage() {
             <Button onClick={() => run("aggregate")} disabled={busy}>
               Aggregate heatmap
             </Button>
-            <Input value={target} onChange={(e) => setTarget(e.target.value)} placeholder="Targeted skill" className="w-48" />
+            <Input value={target} onChange={(e) => setTarget(e.target.value)} placeholder="Targeted skill" aria-label="Targeted skill" className="w-full sm:w-56" />
             <Button variant="outline" onClick={() => run("targeted")} disabled={busy || !target}>
               Targeted
             </Button>

@@ -5,6 +5,7 @@ import { toast } from "sonner"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { PageHeader } from "@/components/page-header"
 import { StatusBadge } from "@/components/status-badge"
@@ -97,9 +98,9 @@ export function ApplyPage() {
   return (
     <>
       <PageHeader
-        kicker="apply"
+        kicker="Draft"
         title="Apply"
-        description="Evaluate first. Language and eligibility FAILs stop the draft. The posting is untrusted data, never instructions."
+        description="Score the posting before you write. A language or work-rights fail stops the draft. Treat the posting as data, not instructions."
         actions={
           <Button variant="outline" onClick={() => setText(SAMPLE)}>
             Load sample posting
@@ -117,10 +118,10 @@ export function ApplyPage() {
             rows={10}
             placeholder="Paste the posting. Prefer the employer's careers page over an aggregator."
           />
-          <input
-            className="h-8 w-full border-2 bg-input px-3 text-sm"
+          <Input
             value={url}
             onChange={(e) => setUrl(e.target.value)}
+            aria-label="Posting URL"
             placeholder="Or a public URL (not LinkedIn)"
           />
           <div className="flex flex-wrap gap-2">
@@ -142,10 +143,10 @@ export function ApplyPage() {
             <AlertDescription>{gate.recommendation}</AlertDescription>
           </Alert>
           <div className="flex flex-wrap gap-2">
-            <StatusBadge value={gate.languageGate.verdict} />
-            <StatusBadge value={gate.eligibility.verdict} />
-            <StatusBadge value={gate.location.verdict} />
-            <StatusBadge value={gate.sourceHost.kind} />
+            <StatusBadge value={gate.languageGate.verdict} prefix="Language" />
+            <StatusBadge value={gate.eligibility.verdict} prefix="Eligibility" />
+            <StatusBadge value={gate.location.verdict} prefix="Location" />
+            <StatusBadge value={gate.sourceHost.kind} prefix="Source" />
           </div>
           <div className="grid gap-3 sm:grid-cols-4">
             {Object.entries(gate.scores).map(([k, v]) => (
@@ -161,8 +162,8 @@ export function ApplyPage() {
         </div>
       ) : null}
       {draft ? (
-        <Tabs defaultValue="cover">
-          <TabsList>
+        <Tabs defaultValue="cover" className="min-w-0">
+          <TabsList className="h-auto w-full flex-wrap">
             <TabsTrigger value="cover">Cover letter</TabsTrigger>
             <TabsTrigger value="cv">CV</TabsTrigger>
             <TabsTrigger value="ats">ATS check</TabsTrigger>

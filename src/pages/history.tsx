@@ -18,7 +18,7 @@ export function HistoryPage() {
   if (!history) return <LoadingState label="Loading history" />
   return (
     <>
-      <PageHeader kicker="history" title="History" description="Local activity log. Nothing here left this machine." />
+      <PageHeader kicker="Log" title="History" description="What happened on this machine. Nothing in this list was uploaded." />
       {history.length === 0 ? (
         <EmptyState title="Quiet so far" body="Scrape, rank, and apply write entries here." />
       ) : (
@@ -26,11 +26,11 @@ export function HistoryPage() {
           {history.map((h) => (
             <Card key={h.id}>
               <CardContent className="py-3">
-                <p className="font-head text-sm">{h.title}</p>
+                <p className="font-head text-sm leading-snug break-words">{h.title}</p>
                 <p className="text-xs text-muted-foreground">
                   {when(h.at)} · {h.kind}
                 </p>
-                <p className="text-sm">{h.detail}</p>
+                <p className="text-sm leading-relaxed break-words">{h.detail}</p>
               </CardContent>
             </Card>
           ))}

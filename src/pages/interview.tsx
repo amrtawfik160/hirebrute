@@ -33,7 +33,7 @@ export function InterviewPage() {
   return (
     <>
       <PageHeader
-        kicker="interview"
+        kicker="Prep"
         title="Interview"
         description="Live processes only. Drafted rows never qualify. No claim in the room that is not on the paper."
       />
@@ -44,7 +44,7 @@ export function InterviewPage() {
           <CardContent className="flex flex-col gap-3 py-4 sm:flex-row sm:items-end">
             <label className="grid flex-1 gap-1 text-sm">
               Application
-              <select className="h-9 border-2 bg-input px-2" value={selected} onChange={(e) => setSelected(e.target.value)}>
+              <select className="h-10 w-full border-2 border-black bg-white px-3 text-sm shadow-sm" value={selected} onChange={(e) => setSelected(e.target.value)}>
                 {live.map((a) => (
                   <option key={a.id} value={a.id}>
                     {a.company} · {a.role} · {a.status}
@@ -54,7 +54,7 @@ export function InterviewPage() {
             </label>
             <label className="grid gap-1 text-sm">
               Stage
-              <Input value={stage} onChange={(e) => setStage(e.target.value)} className="w-40" />
+              <Input value={stage} onChange={(e) => setStage(e.target.value)} aria-label="Stage" className="w-full sm:w-40" />
             </label>
             <Button
               onClick={async () => {
@@ -82,7 +82,7 @@ export function InterviewPage() {
             <CardHeader>
               <CardTitle>Likely questions</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 text-sm">
+            <CardContent className="space-y-3 text-sm break-words">
               {pack.likelyQuestions.map((q) => (
                 <div key={q.question}>
                   <p className="font-head">{q.question}</p>
@@ -107,7 +107,7 @@ export function InterviewPage() {
             <CardHeader>
               <CardTitle>Tough questions</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 text-sm">
+            <CardContent className="space-y-3 text-sm break-words">
               {pack.toughQuestions.map((q) => (
                 <div key={q.question}>
                   <p className="font-head">{q.question}</p>

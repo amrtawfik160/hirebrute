@@ -8,7 +8,7 @@ const buttonVariants = cva(
   cn(
     "group/button font-head font-medium inline-flex cursor-pointer items-center justify-center gap-2 rounded whitespace-nowrap select-none transition-all duration-200",
     "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-60",
-    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary aria-invalid:border-destructive",
+    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black aria-invalid:border-destructive",
     // Icons keep their own size; we only set a default when none is given so
     // Neobrutalism's h-4/size-4 icons aren't overridden.
     "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"

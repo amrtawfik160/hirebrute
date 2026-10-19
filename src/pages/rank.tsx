@@ -2,11 +2,10 @@ import { useState } from "react"
 import { Link } from "react-router-dom"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { EmptyState } from "@/components/empty-state"
+import { JobCard } from "@/components/job-card"
 import { PageHeader } from "@/components/page-header"
-import { StatusBadge } from "@/components/status-badge"
 import { api } from "@/lib/api"
 import type { Job } from "../../shared/types"
 
@@ -31,15 +30,23 @@ export function RankPage() {
     }
   }
 
+  const rows = result ? (result.shortlist.length ? result.shortlist : result.ranked) : []
+
   return (
     <>
       <PageHeader
-        kicker="rank"
+        kicker="Shortlist"
         title="Rank"
-        description="Triage scores from posting text and your profile. Apply still re-evaluates in depth. Jobs already on the tracker are excluded."
+        description="Triage scores from the posting and your profile. Apply still re-scores the one you choose. Roles already tracked are left out."
         actions={
           <>
-            <Input value={focus} onChange={(e) => setFocus(e.target.value)} placeholder="Optional focus" className="w-48" />
+            <Input
+              value={focus}
+              onChange={(e) => setFocus(e.target.value)}
+              placeholder="Optional focus"
+              aria-label="Focus"
+              className="w-full sm:w-56"
+            />
             <Button onClick={() => run(false)} disabled={busy}>
               {busy ? "Scoring…" : "Rank new jobs"}
             </Button>
@@ -52,34 +59,29 @@ export function RankPage() {
       {!result ? (
         <EmptyState
           title="Nothing ranked this session"
-          body="Scrape first, then rank. Language and eligibility FAILs zero the score instead of hiding the gate."
+          body="Scrape first, then rank. A language or eligibility fail sets the score to zero and says why."
           action={
             <Button asChild variant="secondary">
               <Link to="/jobs">Go to jobs</Link>
             </Button>
           }
         />
+      ) : rows.length === 0 ? (
+        <EmptyState title="No jobs matched" body={`${result.deferred} stayed in the backlog. Scrape again or clear the focus.`} />
       ) : (
-        <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">{result.deferred} deferred past this batch.</p>
-          {(result.shortlist.length ? result.shortlist : result.ranked).map((job) => (
-            <Card key={job.key}>
-              <CardContent className="space-y-2 py-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="font-head">{job.title}</p>
-                  <StatusBadge value={job.status} />
-                  <StatusBadge value={job.languageGate} />
-                  <StatusBadge value={job.locationVerdict} />
-                </div>
-                <p className="text-sm">
-                  {job.company} · {job.rankScore ?? "—"}/100
-                </p>
-                {job.gaps?.length ? <p className="text-sm">Gaps: {job.gaps.join(" · ")}</p> : null}
+        <div className="grid gap-4">
+          <p className="text-sm text-muted-foreground">{result.deferred} left for a later batch.</p>
+          {rows.map((job) => (
+            <JobCard
+              key={job.key}
+              job={job}
+              showGaps
+              action={
                 <Button asChild size="sm">
-                  <Link to={`/apply?jobKey=${encodeURIComponent(job.key)}`}>Evaluate & draft</Link>
+                  <Link to={`/apply?jobKey=${encodeURIComponent(job.key)}`}>Evaluate and draft</Link>
                 </Button>
-              </CardContent>
-            </Card>
+              }
+            />
           ))}
         </div>
       )}

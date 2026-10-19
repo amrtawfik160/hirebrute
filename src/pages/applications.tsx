@@ -43,9 +43,9 @@ export function ApplicationsPage() {
   return (
     <>
       <PageHeader
-        kicker="outcome"
+        kicker="Tracker"
         title="Applications"
-        description="drafted means nothing was sent, so follow-ups are never due. Leaving drafted overwrites the applied-on date."
+        description="Drafted means you have not sent it, so a follow-up is never due. Marking it sent records today's date as the day you applied."
       />
       {quiet.length ? (
         <Card className="bg-primary">
@@ -59,58 +59,71 @@ export function ApplicationsPage() {
       ) : (
         <div className="space-y-3">
           {apps.map((app) => (
-            <Card key={app.id}>
-              <CardContent className="flex flex-col gap-3 py-4 lg:flex-row lg:items-center lg:justify-between">
-                <div>
-                  <p className="font-head">{app.company}</p>
-                  <p className="text-sm">
-                    {app.role} · applied {app.status === "drafted" ? "(not sent)" : app.date}
+            <article key={app.id} className="space-y-3 border-2 border-black bg-card p-4 shadow-md">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <h2 className="font-head text-lg leading-tight break-words">{app.company}</h2>
+                  <p className="text-sm break-words">
+                    {app.role} · {app.status === "drafted" ? "not sent" : `applied ${app.date}`}
                   </p>
-                  <p className="text-xs text-muted-foreground">{app.notes || "No notes"}</p>
                 </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <StatusBadge value={app.status} />
-                  <Select
-                    value={app.status}
-                    onValueChange={async (status) => {
+                <StatusBadge value={app.status} />
+              </div>
+              <p className="line-clamp-3 text-sm leading-relaxed break-words text-muted-foreground">{app.notes || "No notes yet."}</p>
+              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+                <Select
+                  value={app.status}
+                  onValueChange={async (status) => {
+                    await api(`/api/applications/${app.id}/outcome`, {
+                      method: "POST",
+                      body: JSON.stringify({ status }),
+                    })
+                    toast.success(`${app.company} is now ${status.replace(/_/g, " ")}`)
+                    await refresh()
+                  }}
+                >
+                  <SelectTrigger className="w-full sm:w-48" aria-label={`Status for ${app.company}`}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {STATUSES.map((s) => (
+                        <SelectItem key={s} value={s}>
+                          {s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                        </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {app.status === "drafted" ? (
+                  <Button
+                    onClick={async () => {
                       await api(`/api/applications/${app.id}/outcome`, {
                         method: "POST",
-                        body: JSON.stringify({ status }),
+                        body: JSON.stringify({ status: "applied" }),
                       })
-                      toast.success(`${app.company} → ${status}`)
+                      toast.success(`${app.company} marked sent`)
                       await refresh()
                     }}
                   >
-                    <SelectTrigger className="w-44">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {STATUSES.map((s) => (
-                        <SelectItem key={s} value={s}>
-                          {s.replace(/_/g, " ")}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    Mark sent
+                  </Button>
+                ) : (
                   <Button
-                    size="sm"
                     variant="outline"
-                    disabled={app.status === "drafted"}
                     onClick={async () => {
                       const result = await api<{ text: string }>(`/api/applications/${app.id}/followup`, {
                         method: "POST",
                         body: JSON.stringify({}),
                       })
-                      toast.success("Follow-up logged")
+                      toast.success("Follow-up copied and logged")
                       navigator.clipboard?.writeText(result.text).catch(() => undefined)
                       await refresh()
                     }}
                   >
-                    Follow up
+                    Write follow-up
                   </Button>
-                </div>
-              </CardContent>
-            </Card>
+                )}
+              </div>
+            </article>
           ))}
         </div>
       )}

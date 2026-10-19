@@ -20,7 +20,7 @@ export function ExpandPage() {
   return (
     <>
       <PageHeader
-        kicker="expand"
+        kicker="Profile gaps"
         title="Expand"
         description="Reads uploaded CV, LinkedIn, diplomas, and references. Does not scan application archives. Nothing is written until you accept."
         actions={

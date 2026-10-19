@@ -12,6 +12,7 @@
 
 @theme inline {
   --font-head: var(--jobdesk-font-head);
+  --font-heading: var(--jobdesk-font-head);
   --font-sans: var(--jobdesk-font-sans);
   --radius: var(--radius);
 
@@ -78,7 +79,7 @@
   --secondary-hover: #222;
   --secondary-foreground: #fff;
   --muted: #efe7d6;
-  --muted-foreground: #6b6355;
+  --muted-foreground: #3a342c;
   --accent: #ffe7a3;
   --accent-foreground: #000;
   --destructive: #e63946;
@@ -148,5 +149,10 @@
   h3,
   .font-head {
     font-family: var(--font-head);
+    letter-spacing: -0.02em;
+  }
+  :focus-visible {
+    outline: 3px solid #000;
+    outline-offset: 2px;
   }
 }

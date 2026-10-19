@@ -20,7 +20,7 @@ export function SyncPage() {
   return (
     <>
       <PageHeader
-        kicker="gmail-sync / notion-sync"
+        kicker="Inbox"
         title="Sync"
         description="Gmail is paste-then-approve. It never originates applications and never proposes hired or offer_declined. Notion is a one-way snapshot."
       />

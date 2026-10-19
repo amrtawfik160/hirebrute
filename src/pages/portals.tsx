@@ -23,7 +23,7 @@ export function PortalsPage() {
   return (
     <>
       <PageHeader
-        kicker="add-portal / add-template"
+        kicker="Sources"
         title="Portals & templates"
         description="Login-walled boards are not added. RSS and JSON feeds are fine. Markdown-PDF is the default so you can run without TeX."
       />
