@@ -15,7 +15,9 @@ data/
 !data/.gitkeep
 .env
 .env.*
+!.env.example
 coverage/
+agent-tools/
 
 # Editor directories and files
 .vscode/*

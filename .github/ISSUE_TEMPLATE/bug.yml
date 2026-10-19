@@ -1,0 +1,43 @@
+name: Bug
+description: A broken workflow, a wrong score, or a layout problem.
+title: "[bug] "
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: Say what you clicked and what the page or API returned.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: dropdown
+    id: provider
+    attributes:
+      label: Provider
+      options:
+        - mock
+        - claude-cli
+        - codex-cli
+        - grok-cli
+        - anthropic
+        - openai
+        - xai
+        - gemini
+        - openrouter
+    validations:
+      required: true
+  - type: input
+    id: node
+    attributes:
+      label: Node version
+      placeholder: v22.x
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Paste the relevant server log. Remove keys and profile text first.

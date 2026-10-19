@@ -1,65 +1,65 @@
 # Job Desk
 
-Local-first job search. The app runs on your machine, stores keys in `data/store.json`, and talks to models through a small Node server so the browser never sees a secret.
+Job Desk is a local job search app. It keeps your profile, drafts, and API keys in a JSON file on your machine. The browser talks to a small Node server. That server is the only process that calls a model.
 
-It clones the workflow from [MadsLorentzen/ai-job-search](https://github.com/MadsLorentzen/ai-job-search) and adds a UI, provider switching, history, and export.
+![Job Desk dashboard](docs/screenshots/dashboard.png)
 
-## What you can do
+The workflow follows [ai-job-search](https://github.com/MadsLorentzen/ai-job-search) by Mads Lorentzen. Job Desk adds a UI, provider switching, a history log, and export. The original project is MIT licensed.
 
-1. Build a profile from pasted documents, a CV, or an interview.
-2. Search public job boards and a built-in demo board.
-3. Rank postings against the original five-dimension fit framework, including language and eligibility gates.
-4. Evaluate a posting, then draft a CV and cover letter with a reviewer pass and an ATS text check.
-5. Track outcomes, prep interviews, follow up, and plan upskilling.
-6. Export JSON, CSV, HTML, or a zip. Nothing is uploaded unless you paste it into Gmail or Notion sync yourself.
+## Features
 
-## Run it
+- Build a profile from pasted text, a CV, or notes. The first launch loads a fictional demo candidate, Amira Cole, at amira.cole@example.com, so you can try the app with no key.
+- Search public boards and an offline demo board. LinkedIn is not scraped.
+- Rank new postings. A language or eligibility failure sets the score to 0 and names the gate.
+- Evaluate one posting, then draft a CV and a cover letter. The apply flow runs a reviewer pass and an ATS text check, then saves the files.
+- Record outcomes, prep an interview, write a follow-up, and build an upskill list from recorded gaps.
+- Export JSON, CSV, HTML, or a zip. Gmail updates are a paste you approve. Notion is a one-way snapshot.
 
-You need Node 22+.
+Drafts are excluded from the sent count. `offer_declined` and `withdrawn` are closed applications. They are not counted as rejections.
+
+## Quick start
+
+You need Node 22 or newer.
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open [http://127.0.0.1:4317](http://127.0.0.1:4317). The UI is on 4317. The API is on 4318.
+Open http://127.0.0.1:4317. The API listens on http://127.0.0.1:4318. Vite proxies `/api` to that port.
 
-First launch loads a demo profile (Amira Cole) so scrape, rank, and apply work with the mock provider. Replace it from Profile when you are ready.
+To run the production build on one port:
+
+```bash
+npm run build
+npm start
+```
+
+`npm start` serves the built UI and the API at http://127.0.0.1:4318.
+
+Replace the demo profile from the Profile page before you send a real application. Settings, then Reset, asks you to type `RESET` before it deletes local data.
 
 ```bash
 npm test
 npm run lint
+npm run check:secrets
 ```
-
-## Where data lives
-
-| Path | What |
-|------|------|
-| `data/store.json` | Profile, jobs, applications, settings, keys |
-| `data/applications/` | Drafted CV and cover letter files |
-| `data/documents/` | Uploaded source texts |
-
-Git ignores `data/` except `data/.gitkeep`. Do not commit keys.
-
-To wipe state, use Reset in Settings and type `RESET`.
 
 ## Providers
 
-Pick one active provider on Settings. Detection runs on the server.
+Choose the active provider on the Settings page. The server checks which CLIs and keys are present. Settings saves keys in `data/store.json`. Git does not track that file.
 
-| Provider | How it authenticates |
-|----------|----------------------|
-| Mock (offline) | Always on. Use this for tests and for a first run. |
-| Claude Code CLI | Local `claude` binary. Uses your Claude subscription. No API key stored. |
-| Codex CLI | Local `codex` binary. Uses your ChatGPT subscription. |
-| Grok CLI | Local `grok` binary if installed. |
-| Anthropic API | Key from console.anthropic.com |
-| OpenAI API | Key from platform.openai.com |
-| xAI API | Key from console.x.ai |
-| Gemini API | Key from aistudio.google.com |
-| OpenRouter | Key from openrouter.ai |
-
-CLI install checks:
+| Provider | Authentication |
+| --- | --- |
+| Mock | Always available. No network and no key. |
+| Claude Code CLI | A `claude` binary on `PATH`. Uses your Claude subscription. No key is stored. |
+| Codex CLI | A `codex` binary on `PATH`. Uses your ChatGPT subscription. |
+| Grok CLI | A `grok` binary on `PATH`, if you have one. |
+| Anthropic API | Key from https://console.anthropic.com/ |
+| OpenAI API | Key from https://platform.openai.com/ |
+| xAI API | Key from https://console.x.ai/ |
+| Gemini API | Key from https://aistudio.google.com/ |
+| OpenRouter | Key from https://openrouter.ai/ |
 
 ```bash
 which claude
@@ -67,18 +67,31 @@ which codex
 which grok
 ```
 
-If a binary is missing, Settings shows it as not installed. The mock provider still works.
+Settings marks a missing binary as not installed. The mock provider still runs.
+
+Environment variables are optional. See `.env.example`. Do not put API keys there. Enter keys in Settings.
+
+## Where files live
+
+| Path | Contents |
+| --- | --- |
+| `data/store.json` | Profile, jobs, applications, settings, keys |
+| `data/applications/` | Draft CV, cover letter, and PDF files |
+| `data/documents/` | Text you paste during setup |
+| `data/exports/` | JSON, CSV, HTML, and zip downloads |
+
+Git ignores `data/` except `data/.gitkeep`.
 
 ## Job boards
 
-Built-in boards: Demo, Remotive, Arbeitnow, Remote OK, The Muse, freehire.me. Turn them off on Portals. Add an RSS or JSON endpoint if you have a public search URL.
+Built-in boards are Demo, Remotive, Arbeitnow, Remote OK, The Muse, and freehire.me. Turn a board off on the Portals page. You can add a public RSS or JSON search URL.
 
-This app does not scrape LinkedIn. LinkedIn's terms disallow that. Paste a posting or use a public API instead.
+Paste a posting when a board has no public API. LinkedIn's terms disallow scraping, so this app does not scrape it.
 
-## Original workflow map
+## Workflow map
 
 | Original command | Job Desk page |
-|------------------|---------------|
+| --- | --- |
 | `/setup` | Profile |
 | `/scrape` | Jobs |
 | `/rank` | Rank |
@@ -87,19 +100,42 @@ This app does not scrape LinkedIn. LinkedIn's terms disallow that. Paste a posti
 | `/outcome` | Applications |
 | `/upskill` | Upskill |
 | `/expand` | Expand |
-| `/html-report` | Dashboard |
-| `/add-template` | Templates |
+| `/html-report` | Dashboard, plus HTML export |
+| `/add-template` | Portals page, templates section |
 | `/add-portal` | Portals |
-| `/gmail-sync` | Sync (paste emails, approve a batch) |
-| `/notion-sync` | Sync (export a snapshot, optional token) |
+| `/gmail-sync` | Sync, paste then approve |
+| `/notion-sync` | Sync, one-way snapshot |
 | `/reset` | Settings |
 
-LaTeX is optional. Job Desk writes markdown and an ATS-readable PDF so you can run without TeX.
+Job Desk writes Markdown and a text-layer PDF. You do not need TeX installed.
 
-## Screenshots
+More screens are in `docs/screenshots/`.
 
-See `docs/screenshots/` after a local run. Main screens: Dashboard, Profile, Jobs, Apply, Settings.
+## Architecture
+
+```
+src/          React UI. Vite serves it on port 4317.
+server/       Express API on port 4318. Workflows, portals, providers.
+shared/       Fit gates, dashboard math, and shared types.
+tests/        Vitest. Core rules are tested without a browser.
+data/         Local store. Created on first run. Gitignored.
+```
+
+`server/providers/registry.ts` exposes `detectProviders()` and `generate()`. `generate()` takes a system prompt, a user prompt, and an optional JSON flag. CLI providers, API providers, and the mock provider share that call. Fit rules live in `shared/fit.ts` and `shared/postingGuard.ts`. Rank and apply both use those gates.
+
+## Roadmap
+
+- Run a LaTeX or Typst template when that compiler is on `PATH`.
+- Read Gmail with OAuth. The current Sync page only accepts pasted threads, and it still requires approval before a write.
+- Send the Notion snapshot with the token from Settings. Edits in Notion still do not flow back.
+- Load an optional local salary table. The original project ships a salary lookup script. This app does not bundle that dataset.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-MIT. The original framework is also MIT.
+[MIT](LICENSE). Copyright 2026 Amr Tawfik.
+
+This repository is an application. `package.json` sets `private` to true, so npm will not publish it.

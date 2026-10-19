@@ -1,0 +1,22 @@
+name: Feature
+description: A workflow or provider change.
+title: "[feature] "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Which page is missing the behavior, and what you do today instead.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+    validations:
+      required: true
+  - type: textarea
+    id: out
+    attributes:
+      label: Out of scope
+      description: Name anything this change should not include.
