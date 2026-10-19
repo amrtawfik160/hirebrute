@@ -1,0 +1,21 @@
+Staff AI Engineer, Evaluation
+Northstar Robotics · San Francisco, CA (hybrid 2 days) · Posted 2026-10-12
+
+About the role
+We are hiring a Staff AI Engineer to own the evaluation stack for our warehouse robotics copilot. You will design graded datasets, online monitors, and launch bars that decide when a new model reaches the floor.
+
+Requirements
+- 7+ years in applied ML or search
+- Hands-on retrieval-augmented generation (RAG) in production
+- Python and TypeScript
+- Experience with faithfulness / groundedness evaluation
+- Comfort working with untrusted retrieved documents (prompt injection)
+
+Nice to have
+- Robotics or industrial IoT domain
+- Elasticsearch or similar
+- Mentoring senior engineers
+
+We welcome international applicants already authorized to work in the US. English is the working language.
+
+To apply, send a CV and a short note on a launch you stopped because the evals were not ready.
