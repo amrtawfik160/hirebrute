@@ -330,7 +330,7 @@ export interface ProviderSettings {
 }
 
 export interface AppSettings {
-  activeProvider: ProviderId
+  activeProvider: ProviderId | null
   dataDir?: string
   providers: Record<ProviderId, ProviderSettings>
   notionToken?: string

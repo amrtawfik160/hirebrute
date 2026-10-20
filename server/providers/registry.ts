@@ -35,7 +35,7 @@ export async function detectProviders(): Promise<ProviderStatus[]> {
         kind: meta.kind,
         available: true,
         configured: true,
-        detail: "Always on. Deterministic, offline, safe for tests.",
+        detail: "Off until you select it. Local sample text for tests. No network and no keys.",
         models: [meta.defaultModel],
       })
       continue
@@ -77,6 +77,11 @@ export async function detectProviders(): Promise<ProviderStatus[]> {
 export async function generate(req: GenerateRequest): Promise<{ text: string; provider: ProviderId }> {
   const store = loadStore()
   const id = req.provider || store.settings.activeProvider
+  if (!id) {
+    throw new Error(
+      "No provider selected. Open Settings and choose a CLI or an API key. Offline test mode stays off until you turn it on.",
+    )
+  }
   const cfg = store.settings.providers[id]
   const resolved = resolveProvider(id, cfg)
   const system = req.system

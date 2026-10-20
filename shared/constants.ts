@@ -57,10 +57,10 @@ export const PROVIDER_META: Record<
     docs: "One key, many models. https://openrouter.ai/",
   },
   mock: {
-    label: "Mock (offline)",
+    label: "Offline test mode",
     kind: "mock",
     defaultModel: "heuristic",
-    docs: "Deterministic local provider for demos and tests. No network, no keys.",
+    docs: "Opt-in. Writes local sample text for tests. It does not call a model and it does not search live boards.",
   },
 }
 

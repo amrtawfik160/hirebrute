@@ -28,6 +28,27 @@ export function addDocument(doc: Omit<DocumentFile, "id" | "uploadedAt">): Docum
   return full
 }
 
+function parseLabeledProfile(blob: string): Partial<Profile> {
+  const line = (label: string) => new RegExp(`^${label}:\\s*(.+)$`, "im").exec(blob)?.[1]?.trim()
+  const out: Partial<Profile> = {}
+  const name = line("Name")
+  const email = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/.exec(blob)?.[0]
+  const location = line("Location")
+  const headline = line("Headline")
+  const phone = line("Phone")
+  const skills = [
+    ...(line("Skills")?.split(",").map((s) => s.trim()).filter(Boolean) || []),
+    ...[...blob.matchAll(/^Skill:\s*(.+)$/gim)].map((m) => m[1].trim()),
+  ]
+  if (name) out.name = name
+  if (email) out.email = email
+  if (location) out.location = location
+  if (headline) out.headline = headline
+  if (phone) out.phone = phone
+  if (skills.length) out.skills = { primary: [...new Set(skills)], secondary: [], domain: [], software: [] }
+  return out
+}
+
 export async function ingestDocuments(opts?: { interviewNotes?: string }): Promise<Profile> {
   const store = loadStore()
   const blob = [
@@ -37,6 +58,7 @@ export async function ingestDocuments(opts?: { interviewNotes?: string }): Promi
     .filter(Boolean)
     .join("\n\n")
   if (!blob.trim()) return store.profile
+  let parsed: Partial<Profile> = {}
   try {
     const { text } = await generate({
       system:
@@ -44,22 +66,25 @@ export async function ingestDocuments(opts?: { interviewNotes?: string }): Promi
       prompt: `Current profile:\n${JSON.stringify(store.profile)}\n\nSOURCES:\n${blob}`,
       json: true,
     })
-    const parsed = safeJson<Partial<Profile>>(text, {})
-    if (parsed.skills?.primary?.length) {
-      const have = new Set(store.profile.skills.primary.map((s) => s.toLowerCase()))
-      parsed.skills = {
-        ...store.profile.skills,
-        ...parsed.skills,
-        primary: [
-          ...store.profile.skills.primary,
-          ...parsed.skills.primary.filter((s) => !have.has(s.toLowerCase())),
-        ],
-      }
-    }
-    return saveProfile({ ...parsed, isDemo: false })
-  } catch {
-    return store.profile
+    parsed = safeJson<Partial<Profile>>(text, {})
+  } catch (err) {
+    const message = err instanceof Error ? err.message : ""
+    if (!/No provider selected/i.test(message)) throw err
+    parsed = parseLabeledProfile(blob)
+    if (!parsed.name && !parsed.email && !parsed.skills?.primary?.length) throw err
   }
+  if (parsed.skills?.primary?.length) {
+    const have = new Set(store.profile.skills.primary.map((s) => s.toLowerCase()))
+    parsed.skills = {
+      ...store.profile.skills,
+      ...parsed.skills,
+      primary: [
+        ...store.profile.skills.primary,
+        ...parsed.skills.primary.filter((s) => !have.has(s.toLowerCase())),
+      ],
+    }
+  }
+  return saveProfile({ ...parsed, isDemo: false })
 }
 
 export function startBlank(): Profile {

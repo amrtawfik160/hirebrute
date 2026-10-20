@@ -2,12 +2,13 @@ import { describe, expect, it } from "vitest"
 import { call, SAMPLE_POSTING, CV_PASTE, withApi } from "./support.ts"
 
 describe("api flows", () => {
-  it("seeds a demo profile and rejects an empty ingest", async () => {
+  it("starts empty and rejects an empty ingest", async () => {
     await withApi(async (base) => {
       const health = await call(base, "/api/health")
       expect(health.status).toBe(200)
-      expect(health.json.profile).toBe("Amira Cole")
-      expect(health.json.provider).toBe("mock")
+      expect(health.json.profile).toBeNull()
+      expect(health.json.demo).toBe(false)
+      expect(health.json.provider).toBeNull()
 
       const empty = await call(base, "/api/setup/ingest", { method: "POST", json: { text: "   " } })
       expect(empty.status).toBe(400)
@@ -34,7 +35,8 @@ describe("api flows", () => {
       expect(ingested.json.email).toBe("jordan.hale@example.com")
       expect(ingested.json.headline).toBe("Platform engineer who keeps deploy bars honest")
       expect(ingested.json.skills.primary).toContain("Go")
-      expect(ingested.json.skills.primary).toContain("Python")
+      expect(ingested.json.skills.primary).toContain("span sampling")
+      expect(ingested.json.skills.primary).not.toContain("Python")
 
       const docs = await call(base, "/api/documents")
       expect(docs.json.documents.some((d: { name: string }) => d.name === "pasted-cv.txt")).toBe(true)
@@ -88,6 +90,7 @@ describe("api flows", () => {
 
   it("evaluates, blocks a hard gate, then drafts CV, cover, review, and an ATS check", async () => {
     await withApi(async (base) => {
+      await call(base, "/api/setup/demo", { method: "POST" })
       const blocked = await call(base, "/api/apply/evaluate", {
         method: "POST",
         json: {
@@ -167,6 +170,7 @@ describe("api flows", () => {
 
   it("builds an interview pack, an upskill report, and accepted expand rows", async () => {
     await withApi(async (base) => {
+      await call(base, "/api/providers/active", { method: "POST", json: { id: "mock" } })
       await call(base, "/api/setup/ingest", { method: "POST", json: { text: CV_PASTE, folder: "cv", name: "cv.txt" } })
       const fit = await call(base, "/api/apply/evaluate", { method: "POST", json: { text: SAMPLE_POSTING } })
       const draft = await call(base, "/api/apply/draft", {

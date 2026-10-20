@@ -24,8 +24,12 @@ async function open(page: Page, name: string) {
 test("profile save survives reload and CV paste updates the fields", async ({ page }) => {
   await page.goto("/")
   await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible()
+  await expect(page.getByText("This workspace starts empty")).toBeVisible()
+  const health = await page.request.get("/api/health")
+  expect(await health.json()).toMatchObject({ demo: false, provider: null, profile: null })
   await open(page, "Profile")
-  await expect(page.getByText("Amira Cole, a sample candidate")).toBeVisible()
+  await expect(page.getByLabel("Name")).toHaveValue("")
+  await expect(page.getByText("sample candidate")).toHaveCount(0)
   await page.getByLabel("Headline").fill("Eval lead on this machine")
   await page.getByRole("button", { name: "Save profile" }).click()
   await expect(page.getByText("Profile saved on this machine")).toBeVisible()
@@ -53,7 +57,7 @@ test("settings detects all 9 providers, fake CLIs, and a saved key", async ({ pa
     "xAI API (Grok)",
     "Gemini API",
     "OpenRouter",
-    "Mock (offline)",
+    "Offline test mode",
   ]
   for (const label of labels) {
     await expect(page.getByText(label, { exact: true })).toBeVisible()
@@ -62,7 +66,8 @@ test("settings detects all 9 providers, fake CLIs, and a saved key", async ({ pa
     await expect(providerCard(page, label)).toContainText(/Found/)
     await expect(providerCard(page, label).getByText("ready", { exact: true })).toBeVisible()
   }
-  await expect(providerCard(page, "Mock (offline)").getByRole("button", { name: "Active" })).toBeVisible()
+  await expect(page.getByText("No provider is selected")).toBeVisible()
+  await expect(providerCard(page, "Offline test mode").getByRole("button", { name: "Use" })).toBeVisible()
 
   await page.getByLabel("Anthropic API API key").fill("sk-test-key-12345678")
   await page.getByRole("button", { name: "Save keys" }).click()
@@ -70,16 +75,17 @@ test("settings detects all 9 providers, fake CLIs, and a saved key", async ({ pa
   await expect(page.getByText("sk-••••5678")).toBeVisible()
   await expect(providerCard(page, "Anthropic API").getByText("ready", { exact: true })).toBeVisible()
 
-  for (const label of labels.filter((label) => label !== "Mock (offline)")) {
+  for (const label of labels.filter((label) => label !== "Offline test mode")) {
     await providerCard(page, label).getByRole("button", { name: "Use" }).click()
     await expect(providerCard(page, label).getByRole("button", { name: "Active" })).toBeVisible()
   }
-  await providerCard(page, "Mock (offline)").getByRole("button", { name: "Use" }).click()
-  await expect(providerCard(page, "Mock (offline)").getByRole("button", { name: "Active" })).toBeVisible()
+  await providerCard(page, "Offline test mode").getByRole("button", { name: "Use" }).click()
+  await expect(providerCard(page, "Offline test mode").getByRole("button", { name: "Active" })).toBeVisible()
 })
 
 test("demo scrape lists jobs, rank shows the gates, and Remotive returns a live posting", async ({ page }) => {
   await page.goto("/portals")
+  await page.getByLabel("Offline test board enabled").click()
   for (const name of ["Remotive", "Arbeitnow", "Remote OK", "The Muse", "freehire.me"]) {
     await page.getByLabel(`${name} enabled`).click()
   }
@@ -161,7 +167,7 @@ test("interview pack, upskill, and expand write back to the profile", async ({ p
 
   await open(page, "Expand")
   await page.getByRole("button", { name: "Propose additions" }).click()
-  await expect(page.getByText("span sampling")).toBeVisible()
+  await expect(page.getByText("Nothing new.")).toBeVisible()
   await expect(page.getByText("Nightly Gate")).toBeVisible()
   await page.getByRole("button", { name: "Accept selected" }).click()
   await expect(page.getByText("Accepted additions were appended")).toBeVisible()
@@ -198,7 +204,7 @@ test("gmail paste approval and the notion snapshot update the tracker", async ({
 
 test("portals, templates, and history record the local changes", async ({ page }) => {
   await page.goto("/portals")
-  await page.getByLabel("Demo board enabled").click()
+  await page.getByLabel("Offline test board enabled").click()
   await page.getByLabel("Feed name").fill("Example jobs")
   await page.getByLabel("RSS or JSON URL").fill("https://example.com/jobs.rss")
   await page.getByRole("button", { name: "Add feed" }).click()

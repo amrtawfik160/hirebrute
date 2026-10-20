@@ -33,7 +33,7 @@ export interface StoreData {
 }
 
 const DEFAULT_PORTALS: PortalConfig[] = [
-  { id: "mock", name: "Demo board", enabled: true, kind: "builtin", market: "offline" },
+  { id: "mock", name: "Offline test board", enabled: false, kind: "builtin", market: "sample listings, off until you enable it" },
   {
     id: "remotive",
     name: "Remotive",
@@ -104,9 +104,9 @@ function defaultSettings(): AppSettings {
       bin: id.endsWith("-cli") ? id.replace("-cli", "") : undefined,
     }
   }
-  providers.mock.enabled = true
+  providers.mock.enabled = false
   return {
-    activeProvider: "mock",
+    activeProvider: null,
     providers,
     salaryEnabled: false,
   }
@@ -126,35 +126,36 @@ export function loadStore(): StoreData {
   ensureDir(path.join(dataDir(), "documents"))
   const existing = readJson<StoreData | null>(file(), null)
   if (existing) {
+    const settings = {
+      ...defaultSettings(),
+      ...existing.settings,
+      providers: { ...defaultSettings().providers, ...existing.settings?.providers },
+    }
+    const seededDemo = Boolean(existing.profile?.isDemo)
     cache = {
-      profile: existing.profile || emptyProfile(),
-      settings: { ...defaultSettings(), ...existing.settings, providers: { ...defaultSettings().providers, ...existing.settings?.providers } },
-      jobs: existing.jobs || [],
-      applications: existing.applications || [],
-      history: existing.history || [],
+      profile: seededDemo ? emptyProfile() : existing.profile || emptyProfile(),
+      settings: seededDemo && settings.activeProvider === "mock" ? { ...settings, activeProvider: null } : settings,
+      jobs: seededDemo ? [] : existing.jobs || [],
+      applications: seededDemo ? [] : existing.applications || [],
+      history: seededDemo ? [] : existing.history || [],
       documents: existing.documents || [],
-      portals: existing.portals?.length ? existing.portals : DEFAULT_PORTALS,
+      portals: (existing.portals?.length ? existing.portals : DEFAULT_PORTALS).map((portal) =>
+        portal.id === "mock" ? { ...portal, name: "Offline test board", enabled: seededDemo ? false : portal.enabled } : portal,
+      ),
       templates: existing.templates?.length ? existing.templates : DEFAULT_TEMPLATES,
-      companyResearch: existing.companyResearch || {},
-      upskill: existing.upskill || [],
+      companyResearch: seededDemo ? {} : existing.companyResearch || {},
+      upskill: seededDemo ? [] : existing.upskill || [],
       gmail: existing.gmail || { lastSync: null, processedIds: [] },
     }
+    if (seededDemo) persist()
     return cache
   }
   cache = {
-    profile: { ...DEMO_PROFILE },
+    profile: emptyProfile(),
     settings: defaultSettings(),
     jobs: [],
     applications: [],
-    history: [
-      {
-        id: "hist-seed",
-        at: new Date().toISOString(),
-        kind: "setup",
-        title: "Demo profile loaded",
-        detail: "Amira Cole demo profile. Replace it from Setup when you are ready.",
-      },
-    ],
+    history: [],
     documents: [],
     portals: DEFAULT_PORTALS,
     templates: DEFAULT_TEMPLATES,

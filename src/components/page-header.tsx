@@ -14,7 +14,7 @@ export function PageHeader({
   actions?: ReactNode
   mark?: BrandIconName | ReactNode
 }) {
-  const glyph = typeof mark === "string" ? <BrandIcon name={mark} className="size-10" /> : mark
+  const glyph = typeof mark === "string" ? <BrandIcon name={mark as BrandIconName} className="size-10" /> : mark
   const stacked = typeof mark !== "string" && mark != null
   return (
     <header className="space-y-4 border-b-2 border-black pb-5">

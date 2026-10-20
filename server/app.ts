@@ -304,6 +304,8 @@ export function createApp() {
       recentApplications: store.applications.slice(0, 8),
       recentJobs: store.jobs.slice(0, 8),
       history: store.history.slice(0, 12),
+      provider: store.settings.activeProvider,
+      ready: profileReady(store.profile),
     })
   })
 

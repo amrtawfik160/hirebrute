@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 import { EmptyRobot } from "@/components/brand"
 import { EmptyState, ErrorState, LoadingState } from "@/components/empty-state"
 import { PageHeader } from "@/components/page-header"
@@ -14,6 +15,8 @@ interface Dash {
   recentApplications: Application[]
   recentJobs: Job[]
   history: HistoryEntry[]
+  provider: string | null
+  ready: boolean
 }
 
 export function DashboardPage() {
@@ -46,6 +49,13 @@ export function DashboardPage() {
           </>
         }
       />
+      {data.provider ? null : (
+        <Card className="bg-primary">
+          <CardContent className="py-4 text-sm">
+            This workspace starts empty. Scrapes use the live boards. Choose a provider in Settings before you ask for a draft, an interview pack, or an upskill plan.
+          </CardContent>
+        </Card>
+      )}
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         <Stat label="Sent" value={stats.sent} emphasis />
         <Stat label="Drafted" value={stats.drafted} />

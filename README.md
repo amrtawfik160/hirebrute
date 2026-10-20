@@ -8,8 +8,8 @@ The workflow follows [ai-job-search](https://github.com/MadsLorentzen/ai-job-sea
 
 ## Features
 
-- Build a profile from pasted text, a CV, or notes. The first launch loads a fictional demo candidate, Amira Cole, at amira.cole@example.com, so you can try the app with no key.
-- Search public boards and an offline demo board. LinkedIn is not scraped.
+- Build a profile from pasted text, a CV, or notes. The first launch is empty.
+- Search public boards: Remotive, Arbeitnow, Remote OK, The Muse, and freehire. LinkedIn is not scraped. An offline test board exists and stays off.
 - Rank new postings. A language or eligibility failure sets the score to 0 and names the gate.
 - Evaluate one posting, then draft a CV and a cover letter. The apply flow runs a reviewer pass and an ATS text check, then saves the files.
 - Record outcomes, prep an interview, write a follow-up, and build an upskill list from recorded gaps.
@@ -37,7 +37,7 @@ npm start
 
 `npm start` serves the built UI and the API at http://127.0.0.1:4318.
 
-Replace the demo profile from the Profile page before you send a real application. Settings, then Reset, asks you to type `RESET` before it deletes local data.
+Fill in Profile before you send a real application. Settings, then Reset, asks you to type `RESET` before it deletes local data.
 
 ```bash
 npm test
@@ -71,7 +71,7 @@ which codex
 which grok
 ```
 
-Settings marks a missing binary as not installed. The mock provider still runs.
+Settings marks a missing binary as not installed. Offline test mode stays off until you select it.
 
 Environment variables are optional. See `.env.example`. Do not put API keys there. Enter keys in Settings.
 

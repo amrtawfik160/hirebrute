@@ -59,7 +59,7 @@ export function JobsPage() {
         mark="search"
         kicker="Boards"
         title="Jobs"
-        description="Public boards and the offline demo board. LinkedIn is not scraped. Roles already on your tracker are skipped."
+        description="Public boards only. LinkedIn is not scraped. Roles already on your tracker are skipped."
         actions={
           <>
             <Input
@@ -80,8 +80,8 @@ export function JobsPage() {
       {jobs.length === 0 ? (
         <EmptyState
           title="No jobs stored yet"
-          body="Scrape the demo board to see ranked examples without a network. Other boards need the internet."
-          action={<Button onClick={scrape}>Scrape the demo board</Button>}
+          body="Scrape searches the live boards you left on. Remotive, Arbeitnow, Remote OK, The Muse, and freehire are on. The offline test board stays off."
+          action={<Button onClick={scrape}>Scrape live boards</Button>}
         />
       ) : (
         <div className="grid gap-4">

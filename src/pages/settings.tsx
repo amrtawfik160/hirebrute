@@ -11,7 +11,7 @@ import { api, download } from "@/lib/api"
 import type { ProviderId, ProviderStatus } from "../../shared/types"
 
 interface ProvidersResponse {
-  active: ProviderId
+  active: ProviderId | null
   providers: (ProviderStatus & { keyPreview?: string; model?: string })[]
 }
 
@@ -39,6 +39,13 @@ export function SettingsPage() {
         title="Settings"
         description="Keys are stored in data/store.json on this machine. The browser never sends them to a third party except the provider you chose."
       />
+      {data.active ? null : (
+        <Card className="bg-primary">
+          <CardContent className="py-4 text-sm">
+            No provider is selected. Scrapes hit live boards. CV paste reads labeled lines on this machine. Draft rewrites, interview packs, and upskill plans wait until you choose a CLI or an API key. Offline test mode stays off.
+          </CardContent>
+        </Card>
+      )}
       <Card>
         <CardHeader>
           <CardTitle>Providers</CardTitle>

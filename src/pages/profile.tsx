@@ -41,20 +41,7 @@ export function ProfilePage() {
         kicker="Candidate"
         title="Profile"
         description="Facts here are the only facts drafts may use. A metric that lives only in chat gets stripped later."
-        actions={
-          <>
-            <Button onClick={save}>Save profile</Button>
-            <Button
-              variant="outline"
-              onClick={async () => {
-                setProfile(await api("/api/setup/demo", { method: "POST" }))
-                toast.success("Demo profile restored")
-              }}
-            >
-              Load demo
-            </Button>
-          </>
-        }
+        actions={<Button onClick={save}>Save profile</Button>}
       />
       {profile.isDemo ? (
         <Card className="bg-primary">
