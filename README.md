@@ -2,6 +2,8 @@
 
 Hirebrute is a local job search app. It keeps your profile, drafts, and API keys in a JSON file on your machine. The browser talks to a small Node server. That server is the only process that calls a model.
 
+▶️ [Watch the demo](docs/demo.mp4)
+
 ![Hirebrute dashboard](docs/screenshots/dashboard.png)
 
 The workflow follows [ai-job-search](https://github.com/MadsLorentzen/ai-job-search) by Mads Lorentzen. Hirebrute adds a UI, provider switching, a history log, and export. The original project is MIT licensed.
