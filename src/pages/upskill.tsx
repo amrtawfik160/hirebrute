@@ -39,6 +39,7 @@ export function UpskillPage() {
   return (
     <>
       <PageHeader
+        mark="upskill"
         kicker="Practice"
         title="Upskill"
         description="Recorded gaps beat inferred ones. Skills already on the profile are dropped. Course URLs are omitted unless a provider returns a real http link."

@@ -114,7 +114,7 @@ export function writePdf(markdown: string, dest: string): Promise<void> {
   ensureDir(dest.slice(0, dest.lastIndexOf("/")) || ".")
   const plain = markdownToPlain(markdown)
   return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ size: "LETTER", margin: 54, info: { Title: "Job Desk document" } })
+    const doc = new PDFDocument({ size: "LETTER", margin: 54, info: { Title: "Hirebrute document" } })
     const stream = fs.createWriteStream(dest)
     doc.pipe(stream)
     doc.font("Times-Roman").fontSize(11)

@@ -37,6 +37,7 @@ export function ProfilePage() {
   return (
     <>
       <PageHeader
+        mark="cv"
         kicker="Candidate"
         title="Profile"
         description="Facts here are the only facts drafts may use. A metric that lives only in chat gets stripped later."

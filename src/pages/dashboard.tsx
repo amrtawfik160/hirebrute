@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
+import { EmptyRobot } from "@/components/brand"
 import { EmptyState, ErrorState, LoadingState } from "@/components/empty-state"
 import { PageHeader } from "@/components/page-header"
 import { StatusBadge } from "@/components/status-badge"
@@ -30,6 +31,7 @@ export function DashboardPage() {
   return (
     <>
       <PageHeader
+        mark={<EmptyRobot className="h-24 sm:h-28" />}
         kicker="Today"
         title="Dashboard"
         description="Sent applications only. Drafts stay in their own count until you mark them sent. Declined offers and withdrawals are closed, not rejections."
@@ -82,7 +84,7 @@ export function DashboardPage() {
               </div>
             ))
           ) : (
-            <EmptyState title="No applications yet" body="Evaluate a posting and draft. Drafts stay out of Sent until you mark them sent." />
+            <EmptyState art={false} title="No applications yet" body="Evaluate a posting and draft. Drafts stay out of Sent until you mark them sent." />
           )}
         </section>
         <section className="space-y-3 border-2 border-black bg-card p-4 shadow-md">

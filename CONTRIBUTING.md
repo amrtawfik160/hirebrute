@@ -1,6 +1,6 @@
 # Contributing
 
-Job Desk is a local app. Changes should keep keys and profile text out of git.
+Hirebrute is a local app. Changes should keep keys and profile text out of git.
 
 ## Setup
 

@@ -1,6 +1,6 @@
 import type { ApplicationStatus, ProviderId } from "./types.ts"
 
-export const APP_NAME = "Job Desk"
+export const APP_NAME = "Hirebrute"
 export const APP_PORT_WEB = 4317
 export const APP_PORT_API = 4318
 

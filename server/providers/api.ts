@@ -50,7 +50,7 @@ export async function apiGenerate(
     baseURL: id === "openrouter" ? "https://openrouter.ai/api/v1" : undefined,
     headers:
       id === "openrouter"
-        ? { "HTTP-Referer": "http://127.0.0.1:4317", "X-Title": "Job Desk" }
+        ? { "HTTP-Referer": "http://127.0.0.1:4317", "X-Title": "Hirebrute" }
         : undefined,
   })
   const result = await generateText({

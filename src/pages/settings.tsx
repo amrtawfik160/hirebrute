@@ -34,6 +34,7 @@ export function SettingsPage() {
   return (
     <>
       <PageHeader
+        mark="settings"
         kicker="This machine"
         title="Settings"
         description="Keys are stored in data/store.json on this machine. The browser never sends them to a third party except the provider you chose."

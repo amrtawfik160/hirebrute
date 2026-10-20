@@ -43,6 +43,7 @@ export function ApplicationsPage() {
   return (
     <>
       <PageHeader
+        mark="cover-letter"
         kicker="Tracker"
         title="Applications"
         description="Drafted means you have not sent it, so a follow-up is never due. Marking it sent records today's date as the day you applied."

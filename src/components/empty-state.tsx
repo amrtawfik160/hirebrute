@@ -1,16 +1,20 @@
 import type { ReactNode } from "react"
+import { EmptyRobot } from "@/components/brand"
 
 export function EmptyState({
   title,
   body,
   action,
+  art = true,
 }: {
   title: string
   body: string
   action?: ReactNode
+  art?: boolean
 }) {
   return (
     <div className="space-y-3 border-2 border-dashed border-black bg-white px-4 py-8 shadow-sm">
+      {art ? <EmptyRobot /> : null}
       <h2 className="font-head text-xl leading-tight">{title}</h2>
       <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">{body}</p>
       {action}

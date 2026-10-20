@@ -35,6 +35,7 @@ export function RankPage() {
   return (
     <>
       <PageHeader
+        mark="ranking"
         kicker="Shortlist"
         title="Rank"
         description="Triage scores from the posting and your profile. Apply still re-scores the one you choose. Roles already tracked are left out."

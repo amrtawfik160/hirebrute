@@ -55,10 +55,10 @@ export function dashboardHtml(store: StoreData): string {
   const rate =
     stats.rejectionRate == null ? "n/a" : `${Math.round(stats.rejectionRate * 100)}%`
   return `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><title>Job Desk report</title>
+<html lang="en"><head><meta charset="utf-8"><title>Hirebrute report</title>
 <style>body{font-family:Georgia,serif;background:#fff7e8;color:#000;padding:24px}table{border-collapse:collapse;width:100%}td,th{border:2px solid #000;padding:6px 8px;text-align:left}h1{font-family:Impact,sans-serif}</style>
 </head><body>
-<h1>Job Desk</h1>
+<h1>Hirebrute</h1>
 <p>Sent ${stats.sent} · Drafted ${stats.drafted} · Interviews ${stats.interview} · Offers ${stats.offer} · Rejection rate ${rate}</p>
 <p>Drafted rows are excluded from sent, funnel, and rejection rate. offer_declined and withdrawn are not rejections.</p>
 <svg width="320" height="${stats.funnel.length * 56}" xmlns="http://www.w3.org/2000/svg">
@@ -75,7 +75,7 @@ export async function exportBundle(kind: "json" | "csv" | "html" | "zip"): Promi
   ensureDir(dir)
   const stamp = new Date().toISOString().slice(0, 10)
   if (kind === "json") {
-    const filename = `jobdesk-${stamp}.json`
+    const filename = `hirebrute-${stamp}.json`
     const dest = path.join(dir, filename)
     const safe = {
       ...store,
@@ -105,7 +105,7 @@ export async function exportBundle(kind: "json" | "csv" | "html" | "zip"): Promi
     addHistory({ kind: "export", title: "Exported HTML dashboard", detail: filename })
     return { filename, path: dest, mime: "text/html" }
   }
-  const filename = `jobdesk-${stamp}.zip`
+  const filename = `hirebrute-${stamp}.zip`
   const dest = path.join(dir, filename)
   await zipFiles(dest, store)
   addHistory({ kind: "export", title: "Exported zip", detail: filename })
@@ -148,6 +148,6 @@ export function notionSnapshot(): {
   })
   return {
     pages,
-    warning: "This is a one-way snapshot. Edits in Notion never flow back into Job Desk.",
+    warning: "This is a one-way snapshot. Edits in Notion never flow back into Hirebrute.",
   }
 }

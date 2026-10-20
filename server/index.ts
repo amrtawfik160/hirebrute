@@ -7,5 +7,5 @@ const app = createApp()
 loadStore()
 
 app.listen(port, "127.0.0.1", () => {
-  console.log(`Job Desk API http://127.0.0.1:${port}`)
+  console.log(`Hirebrute API http://127.0.0.1:${port}`)
 })

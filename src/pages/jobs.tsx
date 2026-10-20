@@ -56,6 +56,7 @@ export function JobsPage() {
   return (
     <>
       <PageHeader
+        mark="search"
         kicker="Boards"
         title="Jobs"
         description="Public boards and the offline demo board. LinkedIn is not scraped. Roles already on your tracker are skipped."

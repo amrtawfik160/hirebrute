@@ -1,10 +1,10 @@
-# Job Desk
+# Hirebrute
 
-Job Desk is a local job search app. It keeps your profile, drafts, and API keys in a JSON file on your machine. The browser talks to a small Node server. That server is the only process that calls a model.
+Hirebrute is a local job search app. It keeps your profile, drafts, and API keys in a JSON file on your machine. The browser talks to a small Node server. That server is the only process that calls a model.
 
-![Job Desk dashboard](docs/screenshots/dashboard.png)
+![Hirebrute dashboard](docs/screenshots/dashboard.png)
 
-The workflow follows [ai-job-search](https://github.com/MadsLorentzen/ai-job-search) by Mads Lorentzen. Job Desk adds a UI, provider switching, a history log, and export. The original project is MIT licensed.
+The workflow follows [ai-job-search](https://github.com/MadsLorentzen/ai-job-search) by Mads Lorentzen. Hirebrute adds a UI, provider switching, a history log, and export. The original project is MIT licensed.
 
 ## Features
 
@@ -94,7 +94,7 @@ Paste a posting when a board has no public API. LinkedIn's terms disallow scrapi
 
 ## Workflow map
 
-| Original command | Job Desk page |
+| Original command | Hirebrute page |
 | --- | --- |
 | `/setup` | Profile |
 | `/scrape` | Jobs |
@@ -111,7 +111,7 @@ Paste a posting when a board has no public API. LinkedIn's terms disallow scrapi
 | `/notion-sync` | Sync, one-way snapshot |
 | `/reset` | Settings |
 
-Job Desk writes Markdown and a text-layer PDF. You do not need TeX installed.
+Hirebrute writes Markdown and a text-layer PDF. You do not need TeX installed.
 
 More screens are in `docs/screenshots/`.
 

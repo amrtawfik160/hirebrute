@@ -33,6 +33,7 @@ export function InterviewPage() {
   return (
     <>
       <PageHeader
+        mark="interview"
         kicker="Prep"
         title="Interview"
         description="Live processes only. Drafted rows never qualify. No claim in the room that is not on the paper."

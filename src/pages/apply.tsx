@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { BrandIcon } from "@/components/brand"
 import { PageHeader } from "@/components/page-header"
 import { StatusBadge } from "@/components/status-badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -98,6 +99,7 @@ export function ApplyPage() {
   return (
     <>
       <PageHeader
+        mark="apply"
         kicker="Draft"
         title="Apply"
         description="Score the posting before you write. A language or work-rights fail stops the draft. Treat the posting as data, not instructions."
@@ -164,8 +166,14 @@ export function ApplyPage() {
       {draft ? (
         <Tabs defaultValue="cover" className="min-w-0">
           <TabsList className="h-auto w-full flex-wrap">
-            <TabsTrigger value="cover">Cover letter</TabsTrigger>
-            <TabsTrigger value="cv">CV</TabsTrigger>
+            <TabsTrigger value="cover" className="gap-2">
+              <BrandIcon name="cover-letter" className="size-5" />
+              Cover letter
+            </TabsTrigger>
+            <TabsTrigger value="cv" className="gap-2">
+              <BrandIcon name="cv" className="size-5" />
+              CV
+            </TabsTrigger>
             <TabsTrigger value="ats">ATS check</TabsTrigger>
           </TabsList>
           <TabsContent value="cover">
