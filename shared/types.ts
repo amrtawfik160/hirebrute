@@ -321,10 +321,13 @@ export interface TemplateConfig {
   active: boolean
 }
 
+export type ReasoningEffort = "off" | "low" | "medium" | "high"
+
 export interface ProviderSettings {
   enabled: boolean
   apiKey?: string
   model?: string
+  reasoning?: ReasoningEffort
   bin?: string
   extraArgs?: string[]
 }
@@ -346,6 +349,9 @@ export interface ProviderStatus {
   configured: boolean
   detail: string
   models: string[]
+  modelCatalog: string[]
+  supportsReasoning: boolean
+  reasoning?: ReasoningEffort
 }
 
 export interface UpskillReport {

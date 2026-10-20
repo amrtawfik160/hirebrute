@@ -106,6 +106,7 @@ function defaultSettings(): AppSettings {
     providers[id] = {
       enabled: id === "mock",
       model: PROVIDER_META[id].defaultModel,
+      reasoning: "off",
       bin: id.endsWith("-cli") ? id.replace("-cli", "") : undefined,
     }
   }

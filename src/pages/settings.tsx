@@ -15,14 +15,59 @@ interface ProvidersResponse {
   providers: (ProviderStatus & { keyPreview?: string; model?: string })[]
 }
 
+const REASONING_OPTIONS = ["off", "low", "medium", "high"] as const
+
+interface ModelOption {
+  id: string
+  label: string
+}
+
+// Build the <select> options: the available models, with the currently stored
+// model kept in the list even if it is not (yet) in the fetched catalog.
+function modelOptions(available: ModelOption[], current?: string): ModelOption[] {
+  const list = [...available]
+  if (current && !list.some((m) => m.id === current)) list.unshift({ id: current, label: current })
+  return list.length ? list : [{ id: "", label: "—" }]
+}
+
 export function SettingsPage() {
   const [data, setData] = useState<ProvidersResponse | null>(null)
   const [keys, setKeys] = useState<Record<string, string>>({})
+  const [models, setModels] = useState<Record<string, string>>({})
+  const [reasonings, setReasonings] = useState<Record<string, string>>({})
+  // Models fetched live from each provider's own API, keyed by provider id.
+  const [liveModels, setLiveModels] = useState<Record<string, ModelOption[]>>({})
+  const [loadingModels, setLoadingModels] = useState<string | null>(null)
   const [confirm, setConfirm] = useState("")
   const [scope, setScope] = useState<"profile" | "documents" | "all">("all")
 
+  async function loadModels(id: string) {
+    setLoadingModels(id)
+    try {
+      const res = await api<{ models: ModelOption[]; source: "live" | "catalog" }>(`/api/providers/${id}/models`)
+      setLiveModels((m) => ({ ...m, [id]: res.models }))
+      toast.success(res.source === "live" ? `Loaded ${res.models.length} models` : "Using built-in model list (no key or offline)")
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not load models")
+    } finally {
+      setLoadingModels(null)
+    }
+  }
+
   async function refresh() {
-    setData(await api("/api/providers"))
+    const next: ProvidersResponse = await api("/api/providers")
+    setData(next)
+    // Seed the editable fields from what the server has stored.
+    setModels(Object.fromEntries(next.providers.map((p) => [p.id, p.model || ""])))
+    setReasonings(Object.fromEntries(next.providers.map((p) => [p.id, p.reasoning || "off"])))
+    // Auto-fetch live models where we can reach the provider without extra input:
+    // configured API keys, keyless OpenRouter, and the active provider (incl. CLIs).
+    for (const p of next.providers) {
+      if (p.id === "mock") continue
+      if (next.active === p.id || (p.kind === "api" && (p.configured || p.id === "openrouter"))) {
+        void loadModels(p.id)
+      }
+    }
   }
 
   useEffect(() => {
@@ -86,22 +131,83 @@ export function SettingsPage() {
                   />
                 </div>
               ) : null}
+              {p.id === "mock" ? null : (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="grid gap-1">
+                    <Label htmlFor={`model-${p.id}`}>Model</Label>
+                    <div className="flex gap-2">
+                      <select
+                        id={`model-${p.id}`}
+                        className="h-10 w-full border-2 border-black bg-white px-3 text-sm shadow-sm"
+                        value={models[p.id] ?? ""}
+                        onChange={(e) => setModels((m) => ({ ...m, [p.id]: e.target.value }))}
+                        aria-label={`${p.label} model`}
+                      >
+                        {modelOptions(
+                          liveModels[p.id] ?? (p.modelCatalog ?? []).map((m) => ({ id: m, label: m })),
+                          models[p.id],
+                        ).map((m) => (
+                          <option key={m.id} value={m.id}>
+                            {m.label}
+                          </option>
+                        ))}
+                      </select>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        disabled={loadingModels === p.id}
+                        onClick={() => loadModels(p.id)}
+                      >
+                        {loadingModels === p.id ? "…" : "Load"}
+                      </Button>
+                    </div>
+                  </div>
+                  {p.supportsReasoning ? (
+                    <div className="grid gap-1">
+                      <Label htmlFor={`reason-${p.id}`}>Reasoning</Label>
+                      <select
+                        id={`reason-${p.id}`}
+                        className="h-10 w-full border-2 border-black bg-white px-3 text-sm shadow-sm"
+                        value={reasonings[p.id] ?? "off"}
+                        onChange={(e) => setReasonings((r) => ({ ...r, [p.id]: e.target.value }))}
+                        aria-label={`${p.label} reasoning effort`}
+                      >
+                        {REASONING_OPTIONS.map((o) => (
+                          <option key={o} value={o}>
+                            {o}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  ) : null}
+                </div>
+              )}
             </div>
           ))}
           <Button
             onClick={async () => {
-              const providers = Object.fromEntries(
-                Object.entries(keys)
-                  .filter(([, v]) => v.trim())
-                  .map(([id, apiKey]) => [id, { apiKey }]),
-              )
+              // Merge keys, model, and reasoning edits into one providers patch.
+              const ids = new Set([
+                ...Object.keys(keys),
+                ...Object.keys(models),
+                ...Object.keys(reasonings),
+              ])
+              const providers: Record<string, Record<string, string>> = {}
+              for (const id of ids) {
+                const patch: Record<string, string> = {}
+                if (keys[id]?.trim()) patch.apiKey = keys[id].trim()
+                if (models[id] !== undefined) patch.model = models[id].trim()
+                if (reasonings[id]) patch.reasoning = reasonings[id]
+                if (Object.keys(patch).length) providers[id] = patch
+              }
               await api("/api/settings", { method: "PUT", body: JSON.stringify({ providers }) })
               setKeys({})
-              toast.success("Keys saved locally")
+              toast.success("Settings saved locally")
               await refresh()
             }}
           >
-            Save keys
+            Save provider settings
           </Button>
         </CardContent>
       </Card>

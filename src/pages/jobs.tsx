@@ -148,11 +148,22 @@ function BoardStrip({ jobs, boards, busy }: { jobs: Job[]; boards: BoardCount[];
             className={`border-2 border-black px-3 py-2 shadow-sm ${board.error ? "bg-chart-4" : "bg-white"}`}
           >
             <p className="font-head text-sm">{board.name}</p>
-            <p className="text-sm">{board.error ? board.error : `${count} jobs`}</p>
+            <p className="text-sm">{board.error ? friendlyBoardError(board.error) : `${count} jobs`}</p>
           </div>
         )
       })}
       {busy && !rows.length ? <p className="text-sm">Asking the live boards…</p> : null}
     </div>
   )
+}
+
+// Turns a raw portal error like "themuse 403" into a short, human label.
+function friendlyBoardError(raw: string): string {
+  const code = raw.match(/\b(\d{3})\b/)?.[1]
+  if (/timed? ?out|timeout|aborted/i.test(raw)) return "Timed out"
+  if (code === "403" || code === "401") return "Blocked by the board"
+  if (code === "429") return "Rate limited, try later"
+  if (code && code.startsWith("5")) return "Board unavailable"
+  if (code) return `Unavailable (${code})`
+  return "Unavailable"
 }
