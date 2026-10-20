@@ -1,4 +1,5 @@
 import type { Job, PortalConfig, Profile } from "../../shared/types.ts"
+import { repairMojibake } from "../../shared/text.ts"
 import { jobKey } from "../../shared/jobKey.ts"
 import { loadStore } from "../store.ts"
 import { mockJobs } from "./mock.ts"
@@ -22,17 +23,23 @@ export interface PortalHit {
 export function toJob(hit: PortalHit): Job {
   return {
     key: jobKey({ company: hit.company, title: hit.title, url: hit.url }),
-    title: hit.title,
-    company: hit.company,
-    location: hit.location,
+    title: repairMojibake(hit.title),
+    company: repairMojibake(hit.company),
+    location: repairMojibake(hit.location),
     url: hit.url,
     portal: hit.portal,
     postedDate: hit.postedDate,
-    description: hit.description || "",
-    snippet: (hit.description || "").slice(0, 280),
+    description: repairMojibake(hit.description || ""),
+    snippet: repairMojibake((hit.description || "").slice(0, 280)),
     status: "new",
     seenAt: new Date().toISOString(),
   }
+}
+
+export function scrapeQuery(query: string, profile: Profile): string {
+  const typed = query.trim()
+  if (typed) return typed
+  return profile.search.keywords.slice(0, 3).join(" ").trim() || profile.search.roles[0]?.trim() || ""
 }
 
 export async function searchPortal(
@@ -40,8 +47,8 @@ export async function searchPortal(
   profile: Profile,
   query: string,
 ): Promise<PortalHit[]> {
-  const q = query || profile.search.keywords.slice(0, 3).join(" ") || profile.search.roles[0] || "software engineer"
-  if (portal.id === "mock") return mockJobs(profile, q)
+  const q = scrapeQuery(query, profile)
+  if (portal.id === "mock") return mockJobs(profile, q || "software engineer")
   if (portal.id === "remotive") return await searchRemotive(q)
   if (portal.id === "arbeitnow") return await searchArbeitnow(q)
   if (portal.id === "remoteok") return await searchRemoteOK(q)
@@ -51,10 +58,18 @@ export async function searchPortal(
   return []
 }
 
+export interface BoardReport {
+  id: string
+  name: string
+  fetched: number
+  error?: string
+}
+
 export async function scrapeAll(opts: { query?: string; portals?: string[]; limit?: number }): Promise<{
   jobs: Job[]
   ran: string[]
   failed: { id: string; error: string }[]
+  boards: BoardReport[]
 }> {
   const store = loadStore()
   const selected = store.portals.filter((p) => {
@@ -64,19 +79,25 @@ export async function scrapeAll(opts: { query?: string; portals?: string[]; limi
   const failed: { id: string; error: string }[] = []
   const ran: string[] = []
   const hits: PortalHit[] = []
+  const boards: BoardReport[] = []
   await Promise.all(
     selected.map(async (p) => {
       try {
         const found = await searchPortal(p, store.profile, opts.query || "")
+        const slice = found.slice(0, opts.limit ?? 20)
         ran.push(p.id)
-        hits.push(...found.slice(0, opts.limit ?? 20))
+        hits.push(...slice)
+        boards.push({ id: p.id, name: p.name, fetched: slice.length })
       } catch (e) {
-        failed.push({ id: p.id, error: e instanceof Error ? e.message : String(e) })
+        const error = e instanceof Error ? e.message : String(e)
+        failed.push({ id: p.id, error })
+        boards.push({ id: p.id, name: p.name, fetched: 0, error })
       }
     }),
   )
+  boards.sort((a, b) => a.name.localeCompare(b.name))
   const jobs = hits.map(toJob)
-  return { jobs, ran, failed }
+  return { jobs, ran, failed, boards }
 }
 
 export function portalHosts(): string[] {

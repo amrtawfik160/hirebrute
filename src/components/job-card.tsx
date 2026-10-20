@@ -1,17 +1,21 @@
 import type { ReactNode } from "react"
 import { StatusBadge } from "@/components/status-badge"
+import { repairMojibake } from "../../shared/text"
 import type { Job } from "../../shared/types"
 
 export function JobCard({ job, action, showGaps = false }: { job: Job; action?: ReactNode; showGaps?: boolean }) {
-  const snippet = (job.snippet || job.description || "").replace(/\s+/g, " ").trim()
+  const snippet = repairMojibake(job.snippet || job.description || "").replace(/\s+/g, " ").trim()
+  const title = repairMojibake(job.title)
+  const company = repairMojibake(job.company)
+  const location = repairMojibake(job.location)
   return (
     <article className="border-2 border-black bg-card shadow-md">
       <div className="flex flex-col gap-3 p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <h2 className="font-head text-lg leading-tight break-words">{job.title}</h2>
+            <h2 className="font-head text-lg leading-tight break-words">{title}</h2>
             <p className="mt-1 text-sm break-words">
-              {job.company} · {job.location} · {job.portal}
+              {company} · {location} · {job.portal}
             </p>
           </div>
           {job.rankScore != null ? (

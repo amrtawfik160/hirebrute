@@ -157,7 +157,8 @@ export function createApp() {
   })
 
   app.get("/api/jobs", (_req, res) => {
-    res.json({ jobs: loadStore().jobs })
+    const store = loadStore()
+    res.json({ jobs: store.jobs, lastScrape: store.lastScrape || null })
   })
 
   app.post("/api/jobs/rank", async (req, res, next) => {

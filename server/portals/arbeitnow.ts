@@ -16,9 +16,13 @@ export async function searchArbeitnow(query: string): Promise<PortalHit[]> {
   })
   if (!res.ok) throw new Error(`arbeitnow ${res.status}`)
   const data = (await res.json()) as { data?: ArbeitnowJob[] }
-  const q = query.toLowerCase()
+  const tokens = query.toLowerCase().split(/[^a-z0-9+#]+/).filter((t) => t.length > 1)
   return (data.data || [])
-    .filter((j) => `${j.title} ${j.company_name} ${j.description || ""}`.toLowerCase().includes(q.split(" ")[0] || ""))
+    .filter((j) => {
+      if (!tokens.length) return true
+      const hay = `${j.title} ${j.company_name} ${j.description || ""}`.toLowerCase()
+      return tokens.some((t) => hay.includes(t))
+    })
     .slice(0, 20)
     .map((j) => ({
       title: j.title,
@@ -26,7 +30,11 @@ export async function searchArbeitnow(query: string): Promise<PortalHit[]> {
       location: j.location || "Europe",
       url: j.url || `https://www.arbeitnow.com/jobs/${j.slug}`,
       postedDate: j.created_at ? new Date(j.created_at * 1000).toISOString().slice(0, 10) : undefined,
-      description: j.description,
+      description: strip(j.description || ""),
       portal: "arbeitnow",
     }))
+}
+
+function strip(html: string): string {
+  return html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()
 }

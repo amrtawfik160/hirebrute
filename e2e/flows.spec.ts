@@ -84,6 +84,7 @@ test("settings detects all 9 providers, fake CLIs, and a saved key", async ({ pa
 })
 
 test("demo scrape lists jobs, rank shows the gates, and Remotive returns a live posting", async ({ page }) => {
+  await page.addInitScript(() => sessionStorage.setItem("hirebrute-scraped", "1"))
   await page.goto("/portals")
   await page.getByLabel("Offline test board enabled").click()
   for (const name of ["Remotive", "Arbeitnow", "Remote OK", "The Muse", "freehire.me"]) {
@@ -91,7 +92,7 @@ test("demo scrape lists jobs, rank shows the gates, and Remotive returns a live 
   }
   await page.goto("/jobs")
   await expect(page.getByText("No jobs stored yet")).toBeVisible()
-  await page.getByRole("button", { name: "Scrape boards" }).click()
+  await page.getByRole("button", { name: "Scrape jobs" }).first().click()
   await expect(page.getByText(/new jobs from mock/)).toBeVisible()
   await expect(page.getByText("Lumenfold")).toBeVisible()
 
@@ -107,7 +108,7 @@ test("demo scrape lists jobs, rank shows the gates, and Remotive returns a live 
   await page.goto("/portals")
   await page.getByLabel("Remotive enabled").click()
   await page.goto("/jobs")
-  await page.getByRole("button", { name: "Scrape boards" }).click()
+  await page.getByRole("button", { name: "Scrape jobs" }).click()
   await expect(page.getByText(/from mock, remotive|from remotive, mock/)).toBeVisible({ timeout: 30_000 })
   await expect(page.locator("article").filter({ hasText: "remotive" }).first()).toBeVisible()
 })
@@ -219,6 +220,7 @@ test("portals, templates, and history record the local changes", async ({ page }
 })
 
 test("a wrong reset word changes nothing, RESET clears, and empty pages say so", async ({ page }) => {
+  await page.addInitScript(() => sessionStorage.setItem("hirebrute-scraped", "1"))
   await page.goto("/profile")
   await expect(page.getByLabel("Name")).toHaveValue("Jordan Hale")
   await open(page, "Settings")

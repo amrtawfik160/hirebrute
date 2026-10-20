@@ -30,6 +30,11 @@ export interface StoreData {
   companyResearch: Record<string, CompanyResearch>
   upskill: UpskillReport[]
   gmail: { lastSync: string | null; processedIds: string[] }
+  lastScrape?: {
+    at: string
+    query: string
+    boards: { id: string; name: string; fetched: number; fresh: number; error?: string }[]
+  }
 }
 
 const DEFAULT_PORTALS: PortalConfig[] = [
@@ -146,6 +151,7 @@ export function loadStore(): StoreData {
       companyResearch: seededDemo ? {} : existing.companyResearch || {},
       upskill: seededDemo ? [] : existing.upskill || [],
       gmail: existing.gmail || { lastSync: null, processedIds: [] },
+      lastScrape: seededDemo ? undefined : existing.lastScrape,
     }
     if (seededDemo) persist()
     return cache

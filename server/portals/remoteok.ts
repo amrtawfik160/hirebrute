@@ -18,10 +18,14 @@ export async function searchRemoteOK(query: string): Promise<PortalHit[]> {
   })
   if (!res.ok) throw new Error(`remoteok ${res.status}`)
   const data = (await res.json()) as RemoteOkJob[]
-  const q = query.toLowerCase()
+  const tokens = query.toLowerCase().split(/[^a-z0-9+#]+/).filter((t) => t.length > 1)
   return data
     .filter((j) => j.position || j.title)
-    .filter((j) => `${j.position} ${j.title} ${j.company}`.toLowerCase().includes(q.split(" ")[0] || ""))
+    .filter((j) => {
+      if (!tokens.length) return true
+      const hay = `${j.position || ""} ${j.title || ""} ${j.company || ""} ${j.description || ""}`.toLowerCase()
+      return tokens.some((t) => hay.includes(t))
+    })
     .slice(0, 20)
     .map((j) => ({
       title: j.position || j.title || "Role",
@@ -29,7 +33,11 @@ export async function searchRemoteOK(query: string): Promise<PortalHit[]> {
       location: j.location || "Remote",
       url: j.url || `https://remoteok.com/l/${j.id}`,
       postedDate: j.date?.slice(0, 10),
-      description: j.description,
+      description: strip(j.description || ""),
       portal: "remoteok",
     }))
+}
+
+function strip(html: string): string {
+  return html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()
 }
