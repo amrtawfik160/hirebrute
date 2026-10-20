@@ -45,6 +45,17 @@ export async function ingestDocuments(opts?: { interviewNotes?: string }): Promi
       json: true,
     })
     const parsed = safeJson<Partial<Profile>>(text, {})
+    if (parsed.skills?.primary?.length) {
+      const have = new Set(store.profile.skills.primary.map((s) => s.toLowerCase()))
+      parsed.skills = {
+        ...store.profile.skills,
+        ...parsed.skills,
+        primary: [
+          ...store.profile.skills.primary,
+          ...parsed.skills.primary.filter((s) => !have.has(s.toLowerCase())),
+        ],
+      }
+    }
     return saveProfile({ ...parsed, isDemo: false })
   } catch {
     return store.profile

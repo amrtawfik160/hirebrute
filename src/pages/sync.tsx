@@ -37,13 +37,17 @@ export function SyncPage() {
           />
           <Button
             onClick={async () => {
-              const data = await api<{ proposals: GmailProposal[] }>("/api/gmail/propose", {
-                method: "POST",
-                body: JSON.stringify({ text }),
-              })
-              setProposals(data.proposals)
-              setPicked(data.proposals.filter((p) => !p.needsManual).map((p) => p.id))
-              toast.success(`${data.proposals.length} proposals. Nothing written yet.`)
+              try {
+                const data = await api<{ proposals: GmailProposal[] }>("/api/gmail/propose", {
+                  method: "POST",
+                  body: JSON.stringify({ text }),
+                })
+                setProposals(data.proposals)
+                setPicked(data.proposals.filter((p) => !p.needsManual).map((p) => p.id))
+                toast.success(`${data.proposals.length} proposals. Nothing written yet.`)
+              } catch (e) {
+                toast.error(e instanceof Error ? e.message : "Could not read the paste")
+              }
             }}
           >
             Propose updates

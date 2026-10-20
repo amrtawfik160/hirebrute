@@ -18,7 +18,7 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       "/api": {
-        target: "http://127.0.0.1:4318",
+        target: `http://127.0.0.1:${process.env.JOBDESK_API_PORT || 4318}`,
         changeOrigin: true,
       },
     },

@@ -153,19 +153,25 @@ export function ProfilePage() {
           <Textarea
             value={ingest}
             onChange={(e) => setIngest(e.target.value)}
+            aria-label="CV or notes"
             placeholder="Paste a CV, LinkedIn export, or interview notes. Facts are merged after you run ingest."
             rows={8}
           />
           <Button
             variant="secondary"
+            disabled={!ingest.trim()}
             onClick={async () => {
-              const next = await api<Profile>("/api/setup/ingest", {
-                method: "POST",
-                body: JSON.stringify({ text: ingest, folder: "cv", name: "pasted-cv.txt" }),
-              })
-              setProfile(next)
-              setIngest("")
-              toast.success("Sources stored. Review the merged fields before trusting them.")
+              try {
+                const next = await api<Profile>("/api/setup/ingest", {
+                  method: "POST",
+                  body: JSON.stringify({ text: ingest, folder: "cv", name: "pasted-cv.txt" }),
+                })
+                setProfile(next)
+                setIngest("")
+                toast.success("Sources stored. Review the merged fields before trusting them.")
+              } catch (e) {
+                toast.error(e instanceof Error ? e.message : "Ingest failed")
+              }
             }}
           >
             Ingest text
@@ -177,10 +183,11 @@ export function ProfilePage() {
 }
 
 function Field({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  const id = `profile-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`
   return (
     <div className="grid gap-1">
-      <Label>{label}</Label>
-      <Input value={value} onChange={(e) => onChange(e.target.value)} />
+      <Label htmlFor={id}>{label}</Label>
+      <Input id={id} value={value} onChange={(e) => onChange(e.target.value)} />
     </div>
   )
 }

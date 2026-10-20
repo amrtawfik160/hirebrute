@@ -1,15 +1,12 @@
 import fs from "node:fs"
-import { createRequire } from "node:module"
 import path from "node:path"
+import { ZipArchive } from "archiver"
 import { TRACKER_HEADER } from "../../shared/constants.ts"
 import { dashboardStats } from "../../shared/dashboard.ts"
 import { csvSafe } from "../../shared/status.ts"
 import type { Application } from "../../shared/types.ts"
 import { dataDir, ensureDir } from "../paths.ts"
 import { addHistory, loadStore, type StoreData } from "../store.ts"
-
-const require = createRequire(import.meta.url)
-const archiver = require("archiver") as typeof import("archiver")
 
 function trackerRow(app: Application): string {
   return [
@@ -118,7 +115,7 @@ export async function exportBundle(kind: "json" | "csv" | "html" | "zip"): Promi
 function zipFiles(dest: string, store: StoreData): Promise<void> {
   return new Promise((resolve, reject) => {
     const output = fs.createWriteStream(dest)
-    const archive = archiver("zip", { zlib: { level: 9 } })
+    const archive = new ZipArchive({ zlib: { level: 9 } })
     output.on("close", () => resolve())
     archive.on("error", reject)
     archive.pipe(output)

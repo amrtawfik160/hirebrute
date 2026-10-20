@@ -10,26 +10,15 @@ function slugify(value: string): string {
 }
 
 export function jobKey(input: { company: string; title: string; url?: string }): string {
-  const company = slugify(input.company || "unknown")
-  const title = slugify(input.title || "role")
-  let base = `${company}__${title}`
-  if (base.length > 80) {
-    const hash = createHash("sha1").update(base).digest("hex").slice(0, 8)
-    base = `${base.slice(0, 71)}-${hash}`
-  }
-  if (input.url) {
-    try {
-      const url = new URL(input.url)
-      const id = url.pathname.split("/").filter(Boolean).slice(-1)[0] || ""
-      const idSlug = slugify(id).slice(0, 24)
-      if (idSlug && idSlug !== title && idSlug !== company) {
-        return `${base}__${idSlug}`
-      }
-    } catch {
-      /* ignore malformed urls */
-    }
-  }
-  return base
+  const company = slugify(input.company || "unknown") || "unknown"
+  const title = slugify(input.title || "role") || "role"
+  const hash = createHash("sha1")
+    .update(`${company}|${title}|${input.url || ""}`)
+    .digest("hex")
+    .slice(0, 8)
+  const base = `${company}__${title}`
+  const clipped = base.length > 72 ? base.slice(0, 72).replace(/-+$/, "") : base
+  return `${clipped}__${hash}`
 }
 
 export function archiveSlug(company: string, role: string): string {

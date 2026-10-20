@@ -2,7 +2,7 @@ import fs from "node:fs"
 import path from "node:path"
 import cors from "cors"
 import express from "express"
-import { APP_NAME } from "../shared/constants.ts"
+import { APP_NAME, PROVIDER_META } from "../shared/constants.ts"
 import { dashboardStats } from "../shared/dashboard.ts"
 import { profileReady } from "../shared/fit.ts"
 import type { ApplicationStatus, PortalConfig, ProviderId, TemplateConfig } from "../shared/types.ts"
@@ -58,6 +58,11 @@ export function createApp() {
 
   app.post("/api/setup/ingest", async (req, res, next) => {
     try {
+      const hasText = Boolean(String(req.body?.text || "").trim() || String(req.body?.interviewNotes || "").trim())
+      if (!hasText && loadStore().documents.length === 0) {
+        res.status(400).json({ error: "Paste a CV or notes before ingest." })
+        return
+      }
       if (req.body?.text) {
         addDocument({
           folder: req.body.folder || "cv",
@@ -99,6 +104,10 @@ export function createApp() {
 
   app.post("/api/providers/active", (req, res) => {
     const id = req.body?.id as ProviderId
+    if (!id || !(id in PROVIDER_META)) {
+      res.status(400).json({ error: "Unknown provider." })
+      return
+    }
     mutate((s) => {
       s.settings.activeProvider = id
     })
@@ -207,10 +216,12 @@ export function createApp() {
         const ev = await evaluatePosting({ source: "paste", text: posting, profile: store.profile })
         evaluation = ev.evaluation
         posting = ev.cleanedPosting
-        if (ev.blocked) {
-          res.status(400).json({ error: "Hard gate failed. Not drafting.", ...ev })
-          return
-        }
+      }
+      const gateFailed =
+        evaluation?.languageGate?.verdict === "FAIL" || evaluation?.eligibility?.verdict === "FAIL"
+      if (gateFailed) {
+        res.status(400).json({ error: "Hard gate failed. Not drafting.", evaluation })
+        return
       }
       const persisted = await persistDraft({
         profile: store.profile,
@@ -447,7 +458,15 @@ export function createApp() {
 
   app.post("/api/generate", async (req, res, next) => {
     try {
-      res.json(await generate({ system: req.body?.system || "", prompt: req.body?.prompt || "", json: req.body?.json }))
+      const provider = req.body?.provider
+      res.json(
+        await generate({
+          system: req.body?.system || "",
+          prompt: req.body?.prompt || "",
+          json: req.body?.json,
+          provider: provider && provider in PROVIDER_META ? provider : undefined,
+        }),
+      )
     } catch (err) {
       next(err)
     }

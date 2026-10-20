@@ -16,6 +16,20 @@ describe("jobKey", () => {
     expect(a).toBe(b)
   })
 
+  it("does not collide the same title posted at two urls", () => {
+    const a = jobKey({
+      company: "Eye Security",
+      title: "Senior Carrier and Product Management",
+      url: "https://remotive.com/remote-jobs/product/a",
+    })
+    const b = jobKey({
+      company: "Eye Security",
+      title: "Senior Carrier and Product Management",
+      url: "https://remotive.com/remote-jobs/product/b",
+    })
+    expect(a).not.toBe(b)
+  })
+
   it("does not collide two long titles that share a prefix", () => {
     const a = jobKey({
       company: "Acme",

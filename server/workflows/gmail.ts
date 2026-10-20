@@ -88,7 +88,7 @@ export function approveGmail(ids: string[], proposals: GmailProposal[]): Applica
       const app = s.applications.find((a) => a.id === p.applicationId)
       if (!app) continue
       const status = normalizeStatus(p.proposedStatus)
-      if (!status) continue
+      if (!status || status === "hired" || status === "offer_declined") continue
       if (app.status === "drafted" && status === "applied") {
         app.date = new Date().toISOString().slice(0, 10)
       }

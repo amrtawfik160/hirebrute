@@ -27,11 +27,21 @@ export function JobsPage() {
   async function scrape() {
     setBusy(true)
     try {
-      const result = await api<{ fresh: Job[]; skipped: number; ran: string[] }>("/api/jobs/scrape", {
-        method: "POST",
-        body: JSON.stringify({ query }),
-      })
-      toast.success(`${result.fresh.length} new jobs from ${result.ran.join(", ") || "no boards"}. ${result.skipped} already seen.`)
+      const result = await api<{ fresh: Job[]; skipped: number; ran: string[]; failed: { id: string; error: string }[] }>(
+        "/api/jobs/scrape",
+        {
+          method: "POST",
+          body: JSON.stringify({ query }),
+        },
+      )
+      const failed = result.failed.map((f) => f.id).join(", ")
+      if (result.failed.length && result.fresh.length === 0) {
+        toast.error(`No new jobs. These boards failed: ${failed}.`)
+      } else {
+        toast.success(
+          `${result.fresh.length} new jobs from ${result.ran.join(", ") || "no boards"}. ${result.skipped} already seen.${failed ? ` Failed: ${failed}.` : ""}`,
+        )
+      }
       await refresh()
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Scrape failed")

@@ -4,21 +4,22 @@ import { extractJson } from "../json.ts"
 
 export function mockGenerate(system: string, prompt: string, json?: boolean): string {
   const lower = `${system}\n${prompt}`.toLowerCase()
-  if (lower.includes("fit evaluation") || lower.includes('"scores"') || lower.includes("technical")) {
-    return mockEvaluation(prompt)
-  }
-  if (lower.includes("cover letter")) return mockCover(prompt)
+  if (lower.includes("extract a candidate profile")) return mockIngest(prompt)
+  if (lower.includes("extract new skills")) return mockExpand(prompt)
   if (lower.includes("curriculum vitae") || lower.includes("tailor the cv") || lower.includes("cv markdown")) {
     return mockCv(prompt)
   }
+  if (lower.includes("cover letter")) return mockCover(prompt)
   if (lower.includes("reviewer") || lower.includes("structured edits")) return mockReview(prompt)
   if (lower.includes("upskill") || lower.includes("heatmap")) return mockUpskill(prompt)
-  if (lower.includes("interview") || lower.includes("star")) return mockInterview(prompt)
-  if (lower.includes("expand") || lower.includes("competenc")) return mockExpand()
+  if (lower.includes("interview pack")) return mockInterview(prompt)
+  if (lower.includes("fit evaluation") || lower.includes('"scores"')) return mockEvaluation(prompt)
   if (lower.includes("follow-up") || lower.includes("follow up")) {
-    return "Hello,\n\nChecking in on my application for the role. Happy to share more about the evaluation harness work if useful.\n\nBest,\nAmira"
+    const role = /Follow up on (.+?) at /i.exec(prompt)?.[1] || "the role"
+    const company = /Follow up on .+? at ([^.]+)/i.exec(prompt)?.[1] || "the team"
+    return `Hello,\n\nChecking in on my application for ${role} at ${company}. Happy to share more about the evaluation harness work if useful.\n\nBest,\nAmira`
   }
-  if (lower.includes("gmail") || lower.includes("classify")) {
+  if (lower.includes("classify job emails")) {
     return JSON.stringify({
       proposals: [],
     })
@@ -65,13 +66,15 @@ function mockEvaluation(prompt: string): string {
 }
 
 function mockCv(prompt: string): string {
-  const name = /Name:\s*(.+)/i.exec(prompt)?.[1] || "Amira Cole"
+  const name = /Name:\s*(.+)/i.exec(prompt)?.[1]?.trim() || "Amira Cole"
+  const email = /Email:\s*(\S+)/i.exec(prompt)?.[1] || "amira.cole@example.com"
+  const phone = /Phone:\s*(.+)/i.exec(prompt)?.[1]?.trim() || "+1 415 555 0142"
   const role = /Role:\s*(.+)/i.exec(prompt)?.[1] || "Staff AI Engineer"
   const company = /Company:\s*(.+)/i.exec(prompt)?.[1] || "Target Company"
   return `# ${name}
 
 **${role} candidate for ${company}**
-Oakland, CA · amira.cole@example.com · +1 415 555 0142 · github.com/amira-cole
+Oakland, CA · ${email} · ${phone} · github.com/amira-cole
 
 ## Profile
 Staff applied-AI engineer who ships retrieval systems with a launch bar. I design graded evaluations, keep untrusted documents from steering the model, and own the quality number that decides whether a copilot reaches production.
@@ -101,6 +104,7 @@ M.S. Computer Science, University of Washington (2016). Thesis on retrieval-augm
 function mockCover(prompt: string): string {
   const role = /Role:\s*(.+)/i.exec(prompt)?.[1] || "the role"
   const company = /Company:\s*(.+)/i.exec(prompt)?.[1] || "your team"
+  const name = /Name:\s*(.+)/i.exec(prompt)?.[1]?.trim() || "Amira Cole"
   return `Dear Hiring Manager,
 
 I am applying for ${role} at ${company}. I spend most of my week deciding whether an LLM system is allowed to launch, which is the job as I read it.
@@ -118,7 +122,7 @@ I stopped a vendor replacement last year because it failed 14% of faithfulness c
 I would welcome a conversation about how you currently decide a model is ready for the floor.
 
 Sincerely,
-Amira Cole
+${name}
 `
 }
 
@@ -146,7 +150,38 @@ function mockReview(_prompt: string): string {
   })
 }
 
-function mockUpskill(_prompt: string): string {
+function mockIngest(prompt: string): string {
+  const sources = prompt.split(/SOURCES:/i)[1] || ""
+  const line = (label: string) => new RegExp(`^${label}:\\s*(.+)$`, "im").exec(sources)?.[1]?.trim()
+  const out: Record<string, unknown> = {}
+  const name = line("Name")
+  const email = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/.exec(sources)?.[0]
+  const location = line("Location")
+  const headline = line("Headline")
+  const phone = line("Phone")
+  const skills = line("Skills")
+    ?.split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+  if (name) out.name = name
+  if (email) out.email = email
+  if (location) out.location = location
+  if (headline) out.headline = headline
+  if (phone) out.phone = phone
+  if (skills?.length) out.skills = { primary: skills }
+  return JSON.stringify(out)
+}
+
+function mockUpskill(prompt: string): string {
+  const target = /^Target:[ \t]*(\S.*)$/im.exec(prompt)?.[1]?.trim()
+  if (target) {
+    return JSON.stringify({
+      heatmap: [{ skill: target, score: 1, jobs: 1, provenance: "required" }],
+      domainGaps: [target],
+      softGaps: [],
+      plan: [{ skill: target, why: "You asked for this skill.", hours: 12, resources: [] }],
+    })
+  }
   return JSON.stringify({
     heatmap: [
       { skill: "robotics perception", score: 2.4, jobs: 4, provenance: "recorded gap" },
@@ -200,17 +235,24 @@ function mockInterview(_prompt: string): string {
   })
 }
 
-function mockExpand(): string {
+function mockExpand(prompt: string): string {
+  const docs = prompt.split(/DOCUMENTS:/i)[1] || ""
+  const skill = /^Skill:\s*(.+)$/im.exec(docs)?.[1]?.trim()
+  const project = /^Project:\s*(.+)$/im.exec(docs)?.[1]?.trim()
   return JSON.stringify({
-    skills: [{ name: "trace visualization", source: "Traceboard README", evidence: "1.4k star OSS viewer" }],
-    projects: [
-      {
-        name: "Traceboard",
-        summary: "LLM trace viewer with span-level evals",
-        stack: ["TypeScript", "SQLite"],
-        outcomes: ["1.4k stars"],
-        source: "github",
-      },
-    ],
+    skills: skill
+      ? [{ name: skill, source: "cv", evidence: "Named in the pasted CV", bucket: "primary" }]
+      : [],
+    projects: project
+      ? [
+          {
+            name: project,
+            summary: "Named in the pasted CV",
+            stack: ["TypeScript"],
+            outcomes: ["listed by the candidate"],
+            source: "cv",
+          },
+        ]
+      : [],
   })
 }

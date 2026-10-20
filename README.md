@@ -41,9 +41,13 @@ Replace the demo profile from the Profile page before you send a real applicatio
 
 ```bash
 npm test
+npm run test:e2e
 npm run lint
+npm run typecheck
 npm run check:secrets
 ```
+
+`npm run test:e2e` drives the app in Chromium. Install the browser once with `npx playwright install chromium`.
 
 ## Providers
 

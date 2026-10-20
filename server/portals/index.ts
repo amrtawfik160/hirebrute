@@ -41,19 +41,13 @@ export async function searchPortal(
   query: string,
 ): Promise<PortalHit[]> {
   const q = query || profile.search.keywords.slice(0, 3).join(" ") || profile.search.roles[0] || "software engineer"
-  try {
-    if (portal.id === "mock") return mockJobs(profile, q)
-    if (portal.id === "remotive") return await searchRemotive(q)
-    if (portal.id === "arbeitnow") return await searchArbeitnow(q)
-    if (portal.id === "remoteok") return await searchRemoteOK(q)
-    if (portal.id === "themuse") return await searchTheMuse(q, profile.search.locations[0])
-    if (portal.id === "freehire") return await searchFreehire(q)
-    if (portal.kind === "rss" && portal.endpoint) return await searchRss(portal, q)
-    if (portal.kind === "json" && portal.endpoint) return await searchRss(portal, q)
-  } catch (err) {
-    console.warn(`portal ${portal.id} failed`, err)
-    return []
-  }
+  if (portal.id === "mock") return mockJobs(profile, q)
+  if (portal.id === "remotive") return await searchRemotive(q)
+  if (portal.id === "arbeitnow") return await searchArbeitnow(q)
+  if (portal.id === "remoteok") return await searchRemoteOK(q)
+  if (portal.id === "themuse") return await searchTheMuse(q, profile.search.locations[0])
+  if (portal.id === "freehire") return await searchFreehire(q)
+  if ((portal.kind === "rss" || portal.kind === "json") && portal.endpoint) return await searchRss(portal, q)
   return []
 }
 

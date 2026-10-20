@@ -19,7 +19,9 @@ Use the mock provider unless you are testing a live model. Put any key in Settin
 
 ```bash
 npm test
+npm run test:e2e
 npm run lint
+npm run typecheck
 npm run check:secrets
 ```
 

@@ -14,6 +14,7 @@ export function PortalsPage() {
   const [templates, setTemplates] = useState<TemplateConfig[]>([])
   const [name, setName] = useState("")
   const [endpoint, setEndpoint] = useState("")
+  const [templateName, setTemplateName] = useState("")
 
   useEffect(() => {
     api<{ portals: PortalConfig[] }>("/api/portals").then((d) => setPortals(d.portals))
@@ -42,6 +43,7 @@ export function PortalsPage() {
               </div>
               <Switch
                 checked={p.enabled}
+                aria-label={`${p.name} enabled`}
                 onCheckedChange={async (enabled) => {
                   const next = portals.map((x, j) => (j === i ? { ...x, enabled } : x))
                   setPortals(next)
@@ -52,12 +54,12 @@ export function PortalsPage() {
           ))}
           <div className="grid gap-2 sm:grid-cols-2">
             <div>
-              <Label>Feed name</Label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} />
+              <Label htmlFor="feed-name">Feed name</Label>
+              <Input id="feed-name" value={name} onChange={(e) => setName(e.target.value)} />
             </div>
             <div>
-              <Label>RSS or JSON URL</Label>
-              <Input value={endpoint} onChange={(e) => setEndpoint(e.target.value)} />
+              <Label htmlFor="feed-url">RSS or JSON URL</Label>
+              <Input id="feed-url" value={endpoint} onChange={(e) => setEndpoint(e.target.value)} />
             </div>
           </div>
           <Button
@@ -91,6 +93,29 @@ export function PortalsPage() {
               </p>
             </div>
           ))}
+          <div className="grid gap-2 pt-2 sm:grid-cols-[1fr_auto] sm:items-end">
+            <div>
+              <Label htmlFor="template-name">Template name</Label>
+              <Input id="template-name" value={templateName} onChange={(e) => setTemplateName(e.target.value)} />
+            </div>
+            <Button
+              onClick={async () => {
+                try {
+                  const template = await api<TemplateConfig>("/api/templates", {
+                    method: "POST",
+                    body: JSON.stringify({ name: templateName || "Custom template", kind: "cv", engine: "markdown-pdf" }),
+                  })
+                  setTemplates((t) => [...t, template])
+                  setTemplateName("")
+                  toast.success("Template added")
+                } catch (e) {
+                  toast.error(e instanceof Error ? e.message : "Could not add the template")
+                }
+              }}
+            >
+              Add template
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </>

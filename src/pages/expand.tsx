@@ -26,11 +26,15 @@ export function ExpandPage() {
         actions={
           <Button
             onClick={async () => {
-              const data = await api<Proposal>("/api/expand", { method: "POST", body: "{}" })
-              setProposal(data)
-              setPickedSkills(data.skills.map((s) => s.name))
-              setPickedProjects(data.projects.map((p) => p.name))
-              toast.success("Proposals ready. Review before accepting.")
+              try {
+                const data = await api<Proposal>("/api/expand", { method: "POST", body: "{}" })
+                setProposal(data)
+                setPickedSkills(data.skills.map((s) => s.name))
+                setPickedProjects(data.projects.map((p) => p.name))
+                toast.success("Proposals ready. Review before accepting.")
+              } catch (e) {
+                toast.error(e instanceof Error ? e.message : "Expand failed")
+              }
             }}
           >
             Propose additions
@@ -85,14 +89,18 @@ export function ExpandPage() {
           </Card>
           <Button
             onClick={async () => {
-              await api("/api/expand/accept", {
-                method: "POST",
-                body: JSON.stringify({
-                  skills: proposal.skills.filter((s) => pickedSkills.includes(s.name)),
-                  projects: proposal.projects.filter((p) => pickedProjects.includes(p.name)),
-                }),
-              })
-              toast.success("Accepted additions were appended to the profile")
+              try {
+                await api("/api/expand/accept", {
+                  method: "POST",
+                  body: JSON.stringify({
+                    skills: proposal.skills.filter((s) => pickedSkills.includes(s.name)),
+                    projects: proposal.projects.filter((p) => pickedProjects.includes(p.name)),
+                  }),
+                })
+                toast.success("Accepted additions were appended to the profile")
+              } catch (e) {
+                toast.error(e instanceof Error ? e.message : "Accept failed")
+              }
             }}
           >
             Accept selected

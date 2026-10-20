@@ -67,12 +67,14 @@ export function SettingsPage() {
               </div>
               {p.kind === "api" ? (
                 <div className="grid gap-1">
-                  <Label>API key {p.keyPreview ? `(${p.keyPreview})` : ""}</Label>
+                  <Label htmlFor={`key-${p.id}`}>API key {p.keyPreview ? `(${p.keyPreview})` : ""}</Label>
                   <Input
+                    id={`key-${p.id}`}
                     type="password"
                     value={keys[p.id] || ""}
                     onChange={(e) => setKeys((k) => ({ ...k, [p.id]: e.target.value }))}
                     placeholder="Paste key"
+                    aria-label={`${p.label} API key`}
                   />
                 </div>
               ) : null}
