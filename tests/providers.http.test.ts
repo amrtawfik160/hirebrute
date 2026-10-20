@@ -113,8 +113,10 @@ describe("provider detection and generation", () => {
     for (const id of CLI_IDS) {
       expect(found.find((p) => p.id === id)?.available).toBe(true)
     }
+    // claude-cli is intentionally excluded: it no longer shells out to the
+    // `claude` binary. It generates through the Claude Agent SDK (so the chosen
+    // model and reasoning effort apply), which is covered separately.
     for (const [id, name] of [
-      ["claude-cli", "claude"],
       ["codex-cli", "codex"],
       ["grok-cli", "grok"],
     ] as const) {

@@ -156,8 +156,11 @@ export async function draftApplication(input: DraftInput): Promise<DraftResult> 
     const parsed = safeJson<{ comments?: string[] }>(reviewGen.text, {})
     if (parsed.comments?.length) review = parsed.comments.join(" ")
     else review = reviewGen.text.slice(0, 600)
-  } catch {
-    /* keep grounded drafts */
+  } catch (e) {
+    // No model available, or the provider call failed. Keep the grounded local
+    // draft, but say so plainly instead of pretending a model ran.
+    const reason = e instanceof Error ? e.message : String(e)
+    review = `Local draft only — no model rewrite. ${reason}`.slice(0, 600)
   }
 
   const ats = atsCheck(cvMarkdown, input.profile, input.posting)

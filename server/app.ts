@@ -5,9 +5,10 @@ import express from "express"
 import { APP_NAME, PROVIDER_META } from "../shared/constants.ts"
 import { dashboardStats } from "../shared/dashboard.ts"
 import { profileReady } from "../shared/fit.ts"
-import type { ApplicationStatus, PortalConfig, ProviderId, TemplateConfig } from "../shared/types.ts"
+import type { ApplicationStatus, PortalConfig, ProviderId, ReasoningEffort, TemplateConfig } from "../shared/types.ts"
 import { REPO_ROOT } from "./paths.ts"
 import { detectProviders, generate, maskKey } from "./providers/registry.ts"
+import { listModels } from "./providers/models.ts"
 import {
   addHistory,
   loadStore,
@@ -102,6 +103,21 @@ export function createApp() {
     }
   })
 
+  app.get("/api/providers/:id/models", async (req, res, next) => {
+    try {
+      const id = req.params.id as ProviderId
+      if (!(id in PROVIDER_META)) {
+        res.status(404).json({ error: "Unknown provider." })
+        return
+      }
+      const store = loadStore()
+      const result = await listModels(id, store.settings.providers[id])
+      res.json(result)
+    } catch (err) {
+      next(err)
+    }
+  })
+
   app.post("/api/providers/active", (req, res) => {
     const id = req.body?.id as ProviderId
     if (!id || !(id in PROVIDER_META)) {
@@ -123,10 +139,15 @@ export function createApp() {
       if (body.notionDatabaseId !== undefined) s.settings.notionDatabaseId = body.notionDatabaseId
       if (body.notionToken) s.settings.notionToken = body.notionToken
       if (body.providers) {
-        for (const [id, patch] of Object.entries(body.providers) as [ProviderId, { apiKey?: string; model?: string; bin?: string }][]) {
+        const efforts: ReasoningEffort[] = ["off", "low", "medium", "high"]
+        for (const [id, patch] of Object.entries(body.providers) as [ProviderId, { apiKey?: string; model?: string; bin?: string; reasoning?: string }][]) {
+          const reasoning = efforts.includes(patch.reasoning as ReasoningEffort)
+            ? (patch.reasoning as ReasoningEffort)
+            : s.settings.providers[id].reasoning
           s.settings.providers[id] = {
             ...s.settings.providers[id],
             ...patch,
+            reasoning,
             apiKey:
               patch.apiKey && !patch.apiKey.includes("•")
                 ? patch.apiKey
@@ -501,7 +522,7 @@ function publicSettings() {
     providers: Object.fromEntries(
       Object.entries(s.providers).map(([id, p]) => [
         id,
-        { enabled: p.enabled, model: p.model, bin: p.bin, keyPreview: maskKey(p.apiKey) },
+        { enabled: p.enabled, model: p.model, reasoning: p.reasoning, bin: p.bin, keyPreview: maskKey(p.apiKey) },
       ]),
     ),
   }

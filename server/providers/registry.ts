@@ -2,6 +2,7 @@ import { PROVIDER_META } from "../../shared/constants.ts"
 import type { ProviderId, ProviderStatus } from "../../shared/types.ts"
 import { loadStore } from "../store.ts"
 import { apiGenerate } from "./api.ts"
+import { claudeAgentGenerate } from "./claudeAgent.ts"
 import { runPromptCli, which } from "./cli.ts"
 import { mockGenerate } from "./mock.ts"
 import { resolveProvider } from "./resolve.ts"
@@ -37,6 +38,9 @@ export async function detectProviders(): Promise<ProviderStatus[]> {
         configured: true,
         detail: "Off until you select it. Local sample text for tests. No network and no keys.",
         models: [meta.defaultModel],
+        modelCatalog: meta.models,
+        supportsReasoning: meta.supportsReasoning,
+        reasoning: cfg?.reasoning || "off",
       })
       continue
     }
@@ -57,6 +61,9 @@ export async function detectProviders(): Promise<ProviderStatus[]> {
           ? `Found ${found}. Uses your local subscription; no API key stored.`
           : `Not installed. ${meta.docs}`,
         models: [cfg?.model || meta.defaultModel],
+        modelCatalog: meta.models,
+        supportsReasoning: meta.supportsReasoning,
+        reasoning: cfg?.reasoning || "off",
       })
       continue
     }
@@ -69,6 +76,9 @@ export async function detectProviders(): Promise<ProviderStatus[]> {
       configured: hasKey,
       detail: hasKey ? "API key stored locally in data/store.json." : `No key yet. ${meta.docs}`,
       models: [cfg?.model || meta.defaultModel],
+      modelCatalog: meta.models,
+      supportsReasoning: meta.supportsReasoning,
+      reasoning: cfg?.reasoning || "off",
     })
   }
   return out
@@ -94,6 +104,18 @@ export async function generate(req: GenerateRequest): Promise<{ text: string; pr
   }
 
   if (resolved.kind === "cli") {
+    // Claude Code goes through the Agent SDK so the chosen model and reasoning
+    // effort actually take effect (the `-p` CLI path cannot set effort).
+    if (id === "claude-cli") {
+      const text = await claudeAgentGenerate({
+        model: resolved.model,
+        reasoning: cfg?.reasoning,
+        system,
+        prompt,
+      })
+      return { text, provider: id }
+    }
+
     const bins = [resolved.bin, ...(CLI_BINS[id] || [])]
     let found: string | null = null
     for (const bin of bins) {
@@ -103,11 +125,14 @@ export async function generate(req: GenerateRequest): Promise<{ text: string; pr
     if (!found) {
       throw new Error(`${PROVIDER_META[id].label} CLI not found on PATH. Install it or switch providers.`)
     }
+    const model = resolved.model
+    const reasoning = cfg?.reasoning
     let args: string[]
-    if (id === "claude-cli") {
-      args = ["-p", "$PROMPT", "--output-format", "text", ...resolved.extraArgs]
-    } else if (id === "codex-cli") {
-      args = ["exec", "--skip-git-repo-check", "$PROMPT", ...resolved.extraArgs]
+    if (id === "codex-cli") {
+      const modelArgs = model && model !== "default" ? ["-m", model] : []
+      const reasoningArgs =
+        reasoning && reasoning !== "off" ? ["-c", `model_reasoning_effort="${reasoning}"`] : []
+      args = ["exec", "--skip-git-repo-check", ...modelArgs, ...reasoningArgs, "$PROMPT", ...resolved.extraArgs]
     } else {
       args = resolved.extraArgs.length ? resolved.extraArgs : ["-p", "$PROMPT"]
     }
